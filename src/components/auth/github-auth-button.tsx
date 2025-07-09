@@ -3,19 +3,27 @@
 import { createClient } from "@/lib/supabase/client";
 import Button from "@/components/ui/button/Button";
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 export const GitHubAuthButton = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const searchParams = useSearchParams();
+  const userType = searchParams.get("type");
 
   const handleGitHubLogin = async () => {
     const supabase = createClient();
     setIsLoading(true);
 
     try {
+      // Preserve user type in the redirect URL
+      const redirectUrl = userType
+        ? `${window.location.origin}/auth/callback?userType=${userType}`
+        : `${window.location.origin}/auth/callback`;
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "github",
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: redirectUrl,
         },
       });
 

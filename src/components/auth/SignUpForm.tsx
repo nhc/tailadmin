@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { GitHubAuthButton } from "./github-auth-button";
+import { createClient } from "@/lib/supabase/client";
 
 const allowedTypes = ["Viber", "Coder"];
 
@@ -14,6 +15,7 @@ export default function SignUpForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
   const [userType, setUserType] = useState<"Viber" | "Coder" | null>(null);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const router = useRouter();
   const params = useSearchParams();
   const provider = params.get("type") ?? "";
@@ -26,6 +28,31 @@ export default function SignUpForm() {
       setUserType(provider as "Viber" | "Coder");
     }
   }, [provider]);
+
+  const handleGoogleLogin = async () => {
+    const supabase = createClient();
+    setIsGoogleLoading(true);
+
+    try {
+      // Preserve user type in the redirect URL
+      const redirectUrl = userType
+        ? `${window.location.origin}/auth/callback?userType=${userType}`
+        : `${window.location.origin}/auth/callback`;
+
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: redirectUrl,
+        },
+      });
+
+      if (error) throw error;
+    } catch (error: unknown) {
+      console.error("Google login error:", error);
+    } finally {
+      setIsGoogleLoading(false);
+    }
+  };
 
   return (
     <div className="flex flex-col flex-1 lg:w-1/2 w-full overflow-y-auto no-scrollbar">
@@ -52,7 +79,11 @@ export default function SignUpForm() {
           </div>
           <div>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-5">
-              <button className="inline-flex items-center justify-center gap-3 py-3 text-sm font-normal text-gray-700 transition-colors bg-gray-100 rounded-lg px-7 hover:bg-gray-200 hover:text-gray-800 dark:bg-white/5 dark:text-white/90 dark:hover:bg-white/10">
+              <button
+                onClick={handleGoogleLogin}
+                disabled={isGoogleLoading}
+                className="inline-flex items-center justify-center gap-3 py-3 text-sm font-normal text-gray-700 transition-colors bg-gray-100 rounded-lg px-7 hover:bg-gray-200 hover:text-gray-800 dark:bg-white/5 dark:text-white/90 dark:hover:bg-white/10"
+              >
                 <svg
                   width="20"
                   height="20"
@@ -77,7 +108,9 @@ export default function SignUpForm() {
                     fill="#EB4335"
                   />
                 </svg>
-                Sign up with Google
+                {isGoogleLoading
+                  ? "Connecting to Google..."
+                  : "Sign up with Google"}
               </button>
               <GitHubAuthButton />
             </div>
