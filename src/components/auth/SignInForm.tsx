@@ -2,16 +2,97 @@
 import Checkbox from "@/components/form/input/Checkbox";
 import Input from "@/components/form/input/InputField";
 import Label from "@/components/form/Label";
-import Button from "@/components/ui/button/Button";
 import { ChevronLeftIcon, EyeCloseIcon, EyeIcon } from "@/icons";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import React, { useState } from "react";
+import { GitHubAuthButton } from "./github-auth-button";
+import { createClient } from "@/lib/supabase/client";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { ROUTES } from "@/config/routes";
+
+const signInSchema = z.object({
+  email: z.string().email("Please enter a valid email address"),
+  password: z.string().min(1, "Password is required"),
+  keepLoggedIn: z.boolean().optional(),
+});
+
+type SignInFormData = z.infer<typeof signInSchema>;
 
 export default function SignInForm() {
   const [showPassword, setShowPassword] = useState(false);
-  const [isChecked, setIsChecked] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [isManualLoading, setIsManualLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setValue,
+    watch,
+  } = useForm<SignInFormData>({
+    resolver: zodResolver(signInSchema),
+    defaultValues: {
+      keepLoggedIn: false,
+    },
+  });
+
+  const keepLoggedIn = watch("keepLoggedIn");
+
+  const handleGoogleLogin = async () => {
+    const supabase = createClient();
+    setIsGoogleLoading(true);
+
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+
+      if (error) throw error;
+    } catch (error: unknown) {
+      console.error("Google login error:", error);
+    } finally {
+      setIsGoogleLoading(false);
+    }
+  };
+
+  const onSubmit = async (data: SignInFormData) => {
+    setIsManualLoading(true);
+    setError(null);
+
+    try {
+      const supabase = createClient();
+
+      const { data: authData, error: signInError } =
+        await supabase.auth.signInWithPassword({
+          email: data.email,
+          password: data.password,
+        });
+
+      if (signInError) {
+        setError(signInError.message);
+      }
+
+      if (authData.user) {
+        router.push(ROUTES.DASHBOARD.ROOT);
+      }
+    } catch (error: any) {
+      console.error("Sign in error:", error);
+      setError(error.message || "An error occurred during sign in");
+    } finally {
+      setIsManualLoading(false);
+    }
+  };
+
   return (
-    <div className="flex flex-col flex-1 lg:w-1/2 w-full">
+    <div className="flex flex-col flex-1 lg:w-1/2 w-full overflow-y-auto no-scrollbar">
       <div className="w-full max-w-md sm:pt-10 mx-auto mb-5">
         <Link
           href="/"
@@ -33,7 +114,12 @@ export default function SignInForm() {
           </div>
           <div>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-5">
-              <button className="inline-flex items-center justify-center gap-3 py-3 text-sm font-normal text-gray-700 transition-colors bg-gray-100 rounded-lg px-7 hover:bg-gray-200 hover:text-gray-800 dark:bg-white/5 dark:text-white/90 dark:hover:bg-white/10">
+              <button
+                type="button"
+                onClick={handleGoogleLogin}
+                disabled={isGoogleLoading}
+                className="inline-flex items-center justify-center gap-3 py-3 text-sm font-normal text-gray-700 transition-colors bg-gray-100 rounded-lg px-7 hover:bg-gray-200 hover:text-gray-800 dark:bg-white/5 dark:text-white/90 dark:hover:bg-white/10"
+              >
                 <svg
                   width="20"
                   height="20"
@@ -58,21 +144,11 @@ export default function SignInForm() {
                     fill="#EB4335"
                   />
                 </svg>
-                Sign in with Google
+                {isGoogleLoading
+                  ? "Connecting to Google..."
+                  : "Sign in with Google"}
               </button>
-              <button className="inline-flex items-center justify-center gap-3 py-3 text-sm font-normal text-gray-700 transition-colors bg-gray-100 rounded-lg px-7 hover:bg-gray-200 hover:text-gray-800 dark:bg-white/5 dark:text-white/90 dark:hover:bg-white/10">
-                <svg
-                  width="21"
-                  className="fill-current"
-                  height="20"
-                  viewBox="0 0 21 20"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path d="M15.6705 1.875H18.4272L12.4047 8.75833L19.4897 18.125H13.9422L9.59717 12.4442L4.62554 18.125H1.86721L8.30887 10.7625L1.51221 1.875H7.20054L11.128 7.0675L15.6705 1.875ZM14.703 16.475H16.2305L6.37054 3.43833H4.73137L14.703 16.475Z" />
-                </svg>
-                Sign in with X
-              </button>
+              <GitHubAuthButton />
             </div>
             <div className="relative py-3 sm:py-5">
               <div className="absolute inset-0 flex items-center">
@@ -84,22 +160,42 @@ export default function SignInForm() {
                 </span>
               </div>
             </div>
-            <form>
+
+            {error && (
+              <div className="mb-4 p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg dark:bg-red-900/20 dark:border-red-800 dark:text-red-400">
+                {error}
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit(onSubmit)}>
               <div className="space-y-6">
                 <div>
                   <Label>
-                    Email <span className="text-error-500">*</span>{" "}
+                    Email <span className="text-error-500">*</span>
                   </Label>
-                  <Input placeholder="info@gmail.com" />
+                  <Input
+                    type="email"
+                    id="email"
+                    placeholder="Enter your email"
+                    className={errors.email ? "border-red-500" : ""}
+                    {...register("email")}
+                  />
+                  {errors.email && (
+                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                      {errors.email.message}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <Label>
-                    Password <span className="text-error-500">*</span>{" "}
+                    Password <span className="text-error-500">*</span>
                   </Label>
                   <div className="relative">
                     <Input
                       type={showPassword ? "text" : "password"}
                       placeholder="Enter your password"
+                      className={errors.password ? "border-red-500" : ""}
+                      {...register("password")}
                     />
                     <span
                       onClick={() => setShowPassword(!showPassword)}
@@ -112,10 +208,18 @@ export default function SignInForm() {
                       )}
                     </span>
                   </div>
+                  {errors.password && (
+                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                      {errors.password.message}
+                    </p>
+                  )}
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <Checkbox checked={isChecked} onChange={setIsChecked} />
+                    <Checkbox
+                      checked={keepLoggedIn || false}
+                      onChange={(checked) => setValue("keepLoggedIn", checked)}
+                    />
                     <span className="block font-normal text-gray-700 text-theme-sm dark:text-gray-400">
                       Keep me logged in
                     </span>
@@ -128,16 +232,20 @@ export default function SignInForm() {
                   </Link>
                 </div>
                 <div>
-                  <Button className="w-full" size="sm">
-                    Sign in
-                  </Button>
+                  <button
+                    type="submit"
+                    disabled={isManualLoading}
+                    className="flex items-center justify-center w-full px-4 py-3 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isManualLoading ? "Signing In..." : "Sign In"}
+                  </button>
                 </div>
               </div>
             </form>
 
             <div className="mt-5">
               <p className="text-sm font-normal text-center text-gray-700 dark:text-gray-400 sm:text-start">
-                Don&apos;t have an account? {""}
+                Don&apos;t have an account?{" "}
                 <Link
                   href="/signup"
                   className="text-brand-500 hover:text-brand-600 dark:text-brand-400"

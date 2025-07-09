@@ -1,6 +1,7 @@
 import { Outfit } from "next/font/google";
 import { SidebarProvider } from "@/context/SidebarContext";
 import { ThemeProvider } from "@/context/ThemeContext";
+import { UserProvider } from "@/context/UserContext";
 import "./globals.css";
 import "swiper/swiper-bundle.css";
 import "simplebar-react/dist/simplebar.min.css";
@@ -18,7 +19,9 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${outfit.className} dark:bg-gray-900`}>
         <ThemeProvider>
-          <SidebarProvider>{children}</SidebarProvider>
+          <UserProvider>
+            <SidebarProvider>{children}</SidebarProvider>
+          </UserProvider>
         </ThemeProvider>
       </body>
     </html>

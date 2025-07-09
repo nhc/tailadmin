@@ -7,6 +7,7 @@ import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import {
   SettingsIcon,
   HelpCircleIcon,
+  CircleUserRoundIcon,
   UserRoundIcon,
   ChevronDownIcon,
   ChevronUpIcon,
@@ -19,7 +20,7 @@ export default function UserDropdown() {
   const [isOpen, setIsOpen] = useState(false);
 
   const userName = user?.user_metadata.name || user?.email;
-  const avatarUrl = user?.user_metadata.avatar_url || "/images/user/owner.jpg";
+  const avatarUrl = user?.user_metadata.avatar_url || null;
 
   function toggleDropdown() {
     setIsOpen(!isOpen);
@@ -36,13 +37,17 @@ export default function UserDropdown() {
         className="flex items-center dropdown-toggle text-gray-700 dark:text-gray-400 dropdown-toggle"
       >
         <span className="mr-3 overflow-hidden rounded-full h-8 w-8">
-          <Image
-            alt="User Avatar"
-            className="w-8 h-8 rounded-full"
-            height={250}
-            src={avatarUrl}
-            width={250}
-          />
+          {avatarUrl ? (
+            <Image
+              alt="User Avatar"
+              className="w-8 h-8 rounded-full"
+              height={250}
+              src={avatarUrl}
+              width={250}
+            />
+          ) : (
+            <CircleUserRoundIcon size={25} strokeWidth={2} />
+          )}
         </span>
 
         <span className="block mr-1 font-medium text-theme-sm">
@@ -102,7 +107,9 @@ export default function UserDropdown() {
           </li>
         </ul>
 
-        <LogoutButton />
+        <div className="flex flex-col mt-2">
+          <LogoutButton />
+        </div>
       </Dropdown>
     </div>
   );

@@ -7,9 +7,10 @@ import Input from "../form/input/InputField";
 import Label from "../form/Label";
 import { useAuth } from "@/lib/hooks/useAuth";
 import Badge from "../ui/badge/Badge";
+import { useUserContext } from "@/context/UserContext";
 
 export default function UserInfoCard() {
-  const { user } = useAuth();
+  const { user } = useUserContext();
   const { isOpen, openModal, closeModal } = useModal();
 
   const [userState, setUserState] = useState<typeof user | null>(null);
@@ -44,7 +45,7 @@ export default function UserInfoCard() {
                 Name
               </p>
               <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                {userState?.user_metadata?.name}
+                {userState?.name}
               </p>
             </div>
 
@@ -68,10 +69,12 @@ export default function UserInfoCard() {
 
             <div>
               <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                Phone
+                Stripe Connect Enabled?
               </p>
               <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                {userState?.phone || "N/A"}
+                <Badge color="primary">
+                  {userState?.stripe_account_id ? "Yes" : "No"}
+                </Badge>
               </p>
             </div>
 
@@ -80,7 +83,9 @@ export default function UserInfoCard() {
                 Bio
               </p>
               <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                <Badge color="primary">VIBER OR CODER</Badge>
+                <Badge color="primary">
+                  {userState?.role === "viber" ? "VIBER" : "CODER"}
+                </Badge>
               </p>
             </div>
           </div>

@@ -8,9 +8,12 @@ import Label from "../form/Label";
 import Image from "next/image";
 import { useAuth } from "@/lib/hooks/useAuth";
 import Badge from "../ui/badge/Badge";
+import { CircleUserRoundIcon } from "lucide-react";
+import { useUserContext } from "@/context/UserContext";
 
 export default function UserMetaCard() {
-  const { user, loading: isLoading } = useAuth();
+  const { user, loading: isLoading } = useUserContext();
+  console.log(user);
   const { isOpen, openModal, closeModal } = useModal();
 
   const [userState, setUserState] = useState<typeof user | null>(null);
@@ -37,20 +40,27 @@ export default function UserMetaCard() {
           <div className="flex flex-col items-center w-full gap-6 xl:flex-row">
             {/* <pre>{JSON.stringify(userState, null, 2)}</pre> */}
             <div className="w-20 h-20 overflow-hidden border border-gray-200 rounded-full dark:border-gray-800">
-              <Image
-                width={80}
-                height={80}
-                src={userState?.user_metadata?.avatar_url}
-                alt="user"
-              />
+              {userState?.avatar_url ? (
+                <Image
+                  width={80}
+                  height={80}
+                  src={userState.avatar_url}
+                  alt="user"
+                />
+              ) : (
+                <CircleUserRoundIcon size={80} strokeWidth={2} />
+              )}
             </div>
             <div className="order-3 xl:order-2">
               <h4 className="mb-2 text-lg font-semibold text-center text-gray-800 dark:text-white/90 xl:text-left">
-                {userState?.user_metadata?.name}
+                {userState?.name}
               </h4>
               <div className="flex flex-col items-center gap-1 text-center xl:flex-row xl:gap-3 xl:text-left">
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  <Badge color="primary">VIBER OR CODER</Badge>
+                  <Badge color="primary">
+                    You are a{" "}
+                    <span className="capitalize">{userState?.role}</span>
+                  </Badge>
                 </p>
                 <div className="hidden h-3.5 w-px bg-gray-300 dark:bg-gray-700 xl:block"></div>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
