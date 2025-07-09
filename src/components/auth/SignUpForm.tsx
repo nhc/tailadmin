@@ -8,17 +8,62 @@ import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { GitHubAuthButton } from "./github-auth-button";
 import { createClient } from "@/lib/supabase/client";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { ROUTES } from "@/config/routes";
+import { defaultOnboardingStatus } from "@/config/onboarding-statuses";
 
 const allowedTypes = ["Viber", "Coder"];
 
+const signUpSchema = z.object({
+  firstName: z
+    .string()
+    .min(1, "First name is required")
+    .max(50, "First name must be less than 50 characters"),
+  lastName: z
+    .string()
+    .min(1, "Last name is required")
+    .max(50, "Last name must be less than 50 characters"),
+  email: z.string().email("Please enter a valid email address"),
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters")
+    .regex(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+      "Password must contain at least one uppercase letter, one lowercase letter, and one number"
+    ),
+  acceptTerms: z
+    .boolean()
+    .refine((val) => val === true, "You must accept the terms and conditions"),
+});
+
+type SignUpFormData = z.infer<typeof signUpSchema>;
+
 export default function SignUpForm() {
   const [showPassword, setShowPassword] = useState(false);
-  const [isChecked, setIsChecked] = useState(false);
   const [userType, setUserType] = useState<"Viber" | "Coder" | null>(null);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [isManualLoading, setIsManualLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const params = useSearchParams();
   const provider = params.get("type") ?? "";
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setValue,
+    watch,
+  } = useForm<SignUpFormData>({
+    resolver: zodResolver(signUpSchema),
+    defaultValues: {
+      acceptTerms: false,
+    },
+  });
+
+  const acceptTerms = watch("acceptTerms");
 
   useEffect(() => {
     if (!allowedTypes.includes(provider)) {
@@ -27,14 +72,13 @@ export default function SignUpForm() {
     } else {
       setUserType(provider as "Viber" | "Coder");
     }
-  }, [provider]);
+  }, [provider, router]);
 
   const handleGoogleLogin = async () => {
     const supabase = createClient();
     setIsGoogleLoading(true);
 
     try {
-      // Preserve user type in the redirect URL
       const redirectUrl = userType
         ? `${window.location.origin}/auth/callback?userType=${userType}`
         : `${window.location.origin}/auth/callback`;
@@ -51,6 +95,84 @@ export default function SignUpForm() {
       console.error("Google login error:", error);
     } finally {
       setIsGoogleLoading(false);
+    }
+  };
+
+  const onSubmit = async (data: SignUpFormData) => {
+    if (!userType) {
+      setError("User type is required");
+      return;
+    }
+
+    setIsManualLoading(true);
+    setError(null);
+
+    try {
+      const supabase = createClient();
+
+      const { data: authData, error: signUpError } = await supabase.auth.signUp(
+        {
+          email: data.email,
+          password: data.password,
+          options: {
+            data: {
+              first_name: data.firstName,
+              last_name: data.lastName,
+              full_name: `${data.firstName} ${data.lastName}`,
+              user_type: userType,
+            },
+          },
+        }
+      );
+
+      if (signUpError) {
+        throw signUpError;
+      }
+
+      if (authData.user) {
+        // Create user profile in our users table
+        const role = userType.toLowerCase() as "viber" | "coder";
+
+        const { error: profileError } = await supabase.from("users").insert({
+          id: authData.user.id,
+          email: data.email,
+          name: `${data.firstName} ${data.lastName}`,
+          avatar_url: null,
+          bio: null,
+          role,
+          stripe_account_id: null,
+          onboarding_status: defaultOnboardingStatus,
+        });
+
+        if (profileError) {
+          console.error("Error creating user profile:", profileError);
+          // Don't throw here as the auth was successful
+        }
+
+        // Check if email confirmation is required
+        if (authData.user.email_confirmed_at) {
+          // Email already confirmed, redirect to dashboard
+          router.push(ROUTES.DASHBOARD.ROOT);
+        } else {
+          // Email confirmation required, redirect to a confirmation page or show message
+          router.push("/auth/confirm?email=" + encodeURIComponent(data.email));
+        }
+      }
+    } catch (error: any) {
+      console.error("Sign up error:", error);
+
+      // Handle specific Supabase errors
+      if (error.message?.includes("already registered")) {
+        setError(
+          "An account with this email already exists. Please sign in instead."
+        );
+      } else if (error.message?.includes("password")) {
+        setError("Password must be at least 8 characters long.");
+      } else {
+        setError(error.message || "An error occurred during sign up");
+      }
+    } finally {
+      setIsManualLoading(false);
     }
   };
 
@@ -124,35 +246,54 @@ export default function SignUpForm() {
                 </span>
               </div>
             </div>
-            <form>
+
+            {error && (
+              <div className="mb-4 p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg dark:bg-red-900/20 dark:border-red-800 dark:text-red-400">
+                {error}
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit(onSubmit)}>
               <div className="space-y-5">
                 <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                  {/* <!-- First Name --> */}
+                  {/* First Name */}
                   <div className="sm:col-span-1">
                     <Label>
                       First Name<span className="text-error-500">*</span>
                     </Label>
                     <Input
                       type="text"
-                      id="fname"
-                      name="fname"
+                      id="firstName"
                       placeholder="Enter your first name"
+                      className={errors.firstName ? "border-red-500" : ""}
+                      {...register("firstName")}
                     />
+                    {errors.firstName && (
+                      <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                        {errors.firstName.message}
+                      </p>
+                    )}
                   </div>
-                  {/* <!-- Last Name --> */}
+                  {/* Last Name */}
                   <div className="sm:col-span-1">
                     <Label>
                       Last Name<span className="text-error-500">*</span>
                     </Label>
                     <Input
                       type="text"
-                      id="lname"
-                      name="lname"
+                      id="lastName"
                       placeholder="Enter your last name"
+                      className={errors.lastName ? "border-red-500" : ""}
+                      {...register("lastName")}
                     />
+                    {errors.lastName && (
+                      <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                        {errors.lastName.message}
+                      </p>
+                    )}
                   </div>
                 </div>
-                {/* <!-- Email --> */}
+                {/* Email */}
                 <div>
                   <Label>
                     Email<span className="text-error-500">*</span>
@@ -160,11 +301,17 @@ export default function SignUpForm() {
                   <Input
                     type="email"
                     id="email"
-                    name="email"
                     placeholder="Enter your email"
+                    className={errors.email ? "border-red-500" : ""}
+                    {...register("email")}
                   />
+                  {errors.email && (
+                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                      {errors.email.message}
+                    </p>
+                  )}
                 </div>
-                {/* <!-- Password --> */}
+                {/* Password */}
                 <div>
                   <Label>
                     Password<span className="text-error-500">*</span>
@@ -173,6 +320,8 @@ export default function SignUpForm() {
                     <Input
                       placeholder="Enter your password"
                       type={showPassword ? "text" : "password"}
+                      className={errors.password ? "border-red-500" : ""}
+                      {...register("password")}
                     />
                     <span
                       onClick={() => setShowPassword(!showPassword)}
@@ -185,13 +334,18 @@ export default function SignUpForm() {
                       )}
                     </span>
                   </div>
+                  {errors.password && (
+                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                      {errors.password.message}
+                    </p>
+                  )}
                 </div>
-                {/* <!-- Checkbox --> */}
+                {/* Checkbox */}
                 <div className="flex items-center gap-3">
                   <Checkbox
                     className="w-5 h-5"
-                    checked={isChecked}
-                    onChange={setIsChecked}
+                    checked={acceptTerms}
+                    onChange={(checked) => setValue("acceptTerms", checked)}
                   />
                   <p className="inline-block font-normal text-gray-500 dark:text-gray-400">
                     By creating an account means you agree to the{" "}
@@ -204,10 +358,19 @@ export default function SignUpForm() {
                     </span>
                   </p>
                 </div>
-                {/* <!-- Button --> */}
+                {errors.acceptTerms && (
+                  <p className="text-sm text-red-600 dark:text-red-400">
+                    {errors.acceptTerms.message}
+                  </p>
+                )}
+                {/* Button */}
                 <div>
-                  <button className="flex items-center justify-center w-full px-4 py-3 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600">
-                    Sign Up
+                  <button
+                    type="submit"
+                    disabled={isManualLoading}
+                    className="flex items-center justify-center w-full px-4 py-3 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isManualLoading ? "Creating Account..." : "Sign Up"}
                   </button>
                 </div>
               </div>

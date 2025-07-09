@@ -11,6 +11,7 @@ export const ROUTES = {
     ERROR: "/auth/error",
     SIGN_UP_SUCCESS: "/auth/sign-up-success",
     CONFIRM: "/auth/confirm",
+    EMAIL_CONFIRM: "/auth/confirm",
   },
   DASHBOARD: {
     ROOT: "/dashboard",
