@@ -12,15 +12,16 @@ import {
   ChevronDownIcon,
   ChevronUpIcon,
 } from "lucide-react";
-import { useAuth } from "@/lib/hooks/useAuth";
 import { LogoutButton } from "../auth/logout-button";
+import { useUserContext } from "@/context/UserContext";
+import Badge from "../ui/badge/Badge";
 
 export default function UserDropdown() {
-  const { user } = useAuth();
+  const { user } = useUserContext();
   const [isOpen, setIsOpen] = useState(false);
 
-  const userName = user?.user_metadata.name || user?.email;
-  const avatarUrl = user?.user_metadata.avatar_url || null;
+  const userName = user?.name || user?.email;
+  const avatarUrl = user?.avatar_url || null;
 
   function toggleDropdown() {
     setIsOpen(!isOpen);
@@ -51,7 +52,7 @@ export default function UserDropdown() {
         </span>
 
         <span className="block mr-1 font-medium text-theme-sm">
-          {user?.user_metadata?.name}
+          {user?.name}
         </span>
 
         {isOpen ? <ChevronUpIcon size={20} /> : <ChevronDownIcon size={20} />}
@@ -63,12 +64,12 @@ export default function UserDropdown() {
         className="absolute right-0 mt-[17px] flex w-[260px] flex-col rounded-2xl border border-gray-200 bg-white p-3 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark"
       >
         <div>
-          <span className="block font-medium text-gray-700 text-theme-sm dark:text-gray-400">
-            {userName}
-          </span>
-          <span className="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">
+          <div className="flex items-center justify-between gap-2 font-medium text-gray-700 text-theme-sm dark:text-gray-400">
+            <span>{userName}</span> <Badge>{user?.role}</Badge>
+          </div>
+          <div className="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">
             {user?.email}
-          </span>
+          </div>
         </div>
 
         <ul className="flex flex-col gap-1 pt-4 pb-3 border-b border-gray-200 dark:border-gray-800">

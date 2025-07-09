@@ -22,6 +22,8 @@ import {
   UserCircleIcon,
 } from "../icons/index";
 import SidebarWidget from "./SidebarWidget";
+import Last20Logo from "@/components/_content/Last20Logo";
+import { TicketIcon } from "lucide-react";
 
 type NavItem = {
   name: string;
@@ -31,6 +33,17 @@ type NavItem = {
 };
 
 const navItems: NavItem[] = [
+  {
+    icon: <TicketIcon />,
+    name: "Tasks / Jobs",
+    subItems: [
+      { name: "Open", path: "/dashboard/tasks/open", pro: false },
+      { name: "In Progress", path: "/dashboard/tasks/progress", pro: false },
+      { name: "Completed", path: "/dashboard/tasks/completed", pro: false },
+      { name: "Disputed", path: "/dashboard/tasks/disputed", pro: false },
+      { name: "Cancelled", path: "/dashboard/tasks/cancelled", pro: false },
+    ],
+  },
   {
     icon: <GridIcon />,
     name: "Dashboard",
@@ -393,33 +406,7 @@ const AppSidebar: React.FC = () => {
           !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
         }`}
       >
-        <Link href="/">
-          {isExpanded || isHovered || isMobileOpen ? (
-            <>
-              <Image
-                className="dark:hidden"
-                src="/images/logo/logo.svg"
-                alt="Logo"
-                width={150}
-                height={40}
-              />
-              <Image
-                className="hidden dark:block"
-                src="/images/logo/logo-dark.svg"
-                alt="Logo"
-                width={150}
-                height={40}
-              />
-            </>
-          ) : (
-            <Image
-              src="/images/logo/logo-icon.svg"
-              alt="Logo"
-              width={32}
-              height={32}
-            />
-          )}
-        </Link>
+        <Last20Logo to="/dashboard" />
       </div>
       <div className="flex flex-col overflow-y-auto  duration-300 ease-linear no-scrollbar">
         <nav className="mb-6">

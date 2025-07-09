@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "db:populate": "bash data/scaffold/run-populate.sh",
+    "db:scaffold": "pnpm db:populate"
   },
   "dependencies": {
     "@fullcalendar/core": "^6.1.15",

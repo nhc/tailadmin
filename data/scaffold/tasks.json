@@ -1,0 +1,248 @@
+{
+  "tasks": [
+    {
+      "title": "Fix Zapier webhook that's not triggering on Airtable updates",
+      "description": "I set up a Zapier automation to send Slack notifications when new leads are added to Airtable, but it's not working consistently. Sometimes it triggers, sometimes it doesn't. I've checked the webhook URL and the Zapier setup looks correct. Need someone to debug why the webhook isn't reliable and fix the automation.",
+      "tech_stack": ["Zapier", "Airtable", "Slack", "Webhooks"],
+      "price": 125.0,
+      "category": "api",
+      "links": {
+        "zapier_dashboard": "https://zapier.com/app/dashboard",
+        "airtable_base": "https://airtable.com/app/example"
+      }
+    },
+    {
+      "title": "Debug Bubble.io app that crashes on mobile devices",
+      "description": "My Bubble.io app works perfectly on desktop but crashes immediately when opened on mobile (both iOS and Android). The error seems to be related to responsive design elements. I've tried the standard Bubble mobile fixes but still getting crashes. Need someone to identify the mobile-specific issues and fix them.",
+      "tech_stack": ["Bubble.io", "Mobile Development", "Responsive Design"],
+      "price": 175.0,
+      "category": "frontend",
+      "links": {
+        "bubble_app": "https://bubble.io/app/example",
+        "crash_logs": "https://example.com/logs"
+      }
+    },
+    {
+      "title": "Fix Make.com scenario that's duplicating data in Google Sheets",
+      "description": "I have a Make.com scenario that copies data from a form to Google Sheets, but it's creating duplicate entries. The scenario runs every 5 minutes and sometimes creates 2-3 copies of the same record. I've checked the filters and conditions but can't figure out why duplicates are happening. Need someone to fix the deduplication logic.",
+      "tech_stack": ["Make.com", "Google Sheets", "Data Processing"],
+      "price": 150.0,
+      "category": "api",
+      "links": {
+        "make_scenario": "https://make.com/scenarios/example",
+        "google_sheets": "https://docs.google.com/spreadsheets/d/example"
+      }
+    },
+    {
+      "title": "Optimize Webflow site loading speed (currently 8+ seconds)",
+      "description": "My Webflow site is loading very slowly - takes 8+ seconds on mobile. I've optimized images and reduced some elements, but it's still too slow. The site has a lot of animations and custom code. Need someone to analyze the performance issues and optimize the site to load under 3 seconds.",
+      "tech_stack": [
+        "Webflow",
+        "Performance Optimization",
+        "CSS",
+        "JavaScript"
+      ],
+      "price": 200.0,
+      "category": "frontend",
+      "links": {
+        "webflow_site": "https://example.webflow.io",
+        "gtmetrix_report": "https://gtmetrix.com/reports/example"
+      }
+    },
+    {
+      "title": "Fix Shopify webhook that's not updating inventory correctly",
+      "description": "I have a Shopify webhook that should update inventory levels when orders are placed, but it's not working properly. Sometimes inventory gets updated, sometimes it doesn't. The webhook is configured correctly in Shopify but the endpoint seems to have issues. Need someone to debug the webhook endpoint and fix the inventory sync.",
+      "tech_stack": ["Shopify", "Webhooks", "Node.js", "API Integration"],
+      "price": 225.0,
+      "category": "api",
+      "links": {
+        "shopify_admin": "https://example.myshopify.com/admin",
+        "webhook_endpoint": "https://api.example.com/webhooks"
+      }
+    },
+    {
+      "title": "Debug Notion API integration that's not syncing data",
+      "description": "I built a custom integration using the Notion API to sync data between databases, but it's not working. The API calls are successful but the data isn't being updated in the target database. I've checked the permissions and API keys. Need someone to debug the sync logic and fix the data flow.",
+      "tech_stack": ["Notion API", "JavaScript", "API Integration"],
+      "price": 175.0,
+      "category": "api",
+      "links": {
+        "notion_database": "https://notion.so/example",
+        "github_repo": "https://github.com/example/notion-sync"
+      }
+    },
+    {
+      "title": "Fix Stripe payment form that's not processing on mobile",
+      "description": "My Stripe payment form works perfectly on desktop but fails on mobile devices. Users can enter their card details but the payment never processes. I'm using Stripe Elements with a custom form. The error seems to be related to mobile-specific JavaScript issues. Need someone to debug and fix the mobile payment flow.",
+      "tech_stack": [
+        "Stripe",
+        "JavaScript",
+        "Mobile Development",
+        "Payment Processing"
+      ],
+      "price": 250.0,
+      "category": "frontend",
+      "links": {
+        "stripe_dashboard": "https://dashboard.stripe.com",
+        "payment_form": "https://example.com/payment"
+      }
+    },
+    {
+      "title": "Optimize database queries in Supabase that are timing out",
+      "description": "My Supabase database queries are timing out when fetching large datasets. I'm using PostgreSQL with RLS policies. The queries work fine for small datasets but fail when trying to fetch 1000+ records. Need someone to analyze the query performance, add proper indexes, and optimize the database structure.",
+      "tech_stack": ["PostgreSQL", "Supabase", "Database Optimization"],
+      "price": 200.0,
+      "category": "database",
+      "links": {
+        "supabase_dashboard": "https://supabase.com/dashboard",
+        "query_logs": "https://example.com/logs"
+      }
+    },
+    {
+      "title": "Fix Firebase authentication that works on web but not in mobile app",
+      "description": "My Firebase authentication works perfectly on the web version but fails in the mobile app (React Native). Users can sign up but can't log in on mobile. The error seems to be related to Google Sign-In configuration for mobile. Need someone to debug the mobile auth flow and fix the configuration.",
+      "tech_stack": [
+        "Firebase",
+        "React Native",
+        "Google Sign-In",
+        "Mobile Development"
+      ],
+      "price": 225.0,
+      "category": "mobile",
+      "links": {
+        "firebase_console": "https://console.firebase.google.com",
+        "mobile_app": "https://example.com/app"
+      }
+    },
+    {
+      "title": "Debug AWS Lambda function that's not processing S3 uploads",
+      "description": "I have an AWS Lambda function that should process images uploaded to S3, but it's not triggering properly. The function is configured correctly and the S3 bucket has the right permissions. Sometimes it works, sometimes it doesn't. Need someone to debug the Lambda trigger and fix the S3 integration.",
+      "tech_stack": ["AWS Lambda", "AWS S3", "Node.js", "Serverless"],
+      "price": 200.0,
+      "category": "backend",
+      "links": {
+        "aws_console": "https://console.aws.amazon.com",
+        "lambda_logs": "https://console.aws.amazon.com/cloudwatch"
+      }
+    },
+    {
+      "title": "Fix Google Sheets API integration that's not updating data",
+      "description": "I have a script that updates Google Sheets via the API, but it's not working consistently. The API calls are successful but the data isn't being written to the sheets. I've checked the permissions and API keys. Need someone to debug the API integration and fix the data writing logic.",
+      "tech_stack": ["Google Sheets API", "JavaScript", "API Integration"],
+      "price": 150.0,
+      "category": "api",
+      "links": {
+        "google_sheets": "https://docs.google.com/spreadsheets/d/example",
+        "script_logs": "https://example.com/logs"
+      }
+    },
+    {
+      "title": "Optimize React app that's slow on mobile devices",
+      "description": "My React app loads quickly on desktop but is very slow on mobile devices. The app has a lot of components and state management. I've tried code splitting but it's still slow. Need someone to analyze the mobile performance issues and optimize the app for mobile devices.",
+      "tech_stack": [
+        "React",
+        "JavaScript",
+        "Mobile Development",
+        "Performance"
+      ],
+      "price": 225.0,
+      "category": "frontend",
+      "links": {
+        "react_app": "https://example.com",
+        "performance_report": "https://lighthouse.dev/example"
+      }
+    },
+    {
+      "title": "Fix Docker container that's not connecting to database",
+      "description": "My Docker container can't connect to the PostgreSQL database. The container starts successfully but the app inside can't reach the database. I've checked the network configuration and environment variables. Need someone to debug the Docker networking and fix the database connection.",
+      "tech_stack": ["Docker", "PostgreSQL", "Containerization"],
+      "price": 175.0,
+      "category": "devops",
+      "links": {
+        "docker_compose": "https://github.com/example/docker-compose.yml",
+        "container_logs": "https://example.com/logs"
+      }
+    },
+    {
+      "title": "Debug webhook that's not sending notifications to Discord",
+      "description": "I have a webhook that should send notifications to Discord when certain events happen, but it's not working. The webhook URL is correct and the Discord bot has the right permissions. Need someone to debug the webhook logic and fix the Discord integration.",
+      "tech_stack": ["Discord API", "Webhooks", "Node.js"],
+      "price": 125.0,
+      "category": "api",
+      "links": {
+        "discord_server": "https://discord.gg/example",
+        "webhook_endpoint": "https://api.example.com/webhooks"
+      }
+    },
+    {
+      "title": "Fix image upload that's failing on large files",
+      "description": "My image upload feature works for small images but fails for files larger than 5MB. The error seems to be related to file size limits or memory issues. I'm using a cloud storage service. Need someone to debug the upload logic and fix the large file handling.",
+      "tech_stack": ["File Upload", "Cloud Storage", "Node.js"],
+      "price": 150.0,
+      "category": "backend",
+      "links": {
+        "upload_endpoint": "https://api.example.com/upload",
+        "storage_dashboard": "https://console.example.com/storage"
+      }
+    },
+    {
+      "title": "Optimize database that's running out of storage space",
+      "description": "My database is running out of storage space and queries are getting slower. I need someone to analyze the database structure, identify what's taking up space, and optimize the storage usage. This includes cleaning up old data and optimizing indexes.",
+      "tech_stack": [
+        "PostgreSQL",
+        "Database Optimization",
+        "Storage Management"
+      ],
+      "price": 200.0,
+      "category": "database",
+      "links": {
+        "database_dashboard": "https://console.example.com/database",
+        "storage_analysis": "https://example.com/analysis"
+      }
+    },
+    {
+      "title": "Fix authentication that's not working after domain change",
+      "description": "I changed my domain name and now the authentication system isn't working. Users can't log in and I'm getting redirect errors. I've updated the domain in the auth provider settings but it's still not working. Need someone to debug the domain configuration and fix the auth flow.",
+      "tech_stack": ["Authentication", "Domain Configuration", "OAuth"],
+      "price": 175.0,
+      "category": "backend",
+      "links": {
+        "auth_dashboard": "https://console.example.com/auth",
+        "domain_settings": "https://example.com/settings"
+      }
+    },
+    {
+      "title": "Debug API rate limiting that's blocking legitimate requests",
+      "description": "My API is implementing rate limiting but it's blocking legitimate user requests. Users are getting 429 errors even when they haven't made many requests. The rate limiting logic seems to be too aggressive. Need someone to debug the rate limiting configuration and fix the logic.",
+      "tech_stack": ["API Development", "Rate Limiting", "Node.js"],
+      "price": 150.0,
+      "category": "backend",
+      "links": {
+        "api_dashboard": "https://console.example.com/api",
+        "rate_limit_logs": "https://example.com/logs"
+      }
+    },
+    {
+      "title": "Fix mobile app that crashes on startup",
+      "description": "My mobile app (React Native) crashes immediately when opened on some devices. The crash seems to be related to native dependencies or device-specific issues. I've tried the standard debugging steps but can't identify the root cause. Need someone to debug the crash and fix the startup issues.",
+      "tech_stack": ["React Native", "Mobile Development", "Crash Analysis"],
+      "price": 250.0,
+      "category": "mobile",
+      "links": {
+        "crash_logs": "https://console.example.com/crashes",
+        "mobile_app": "https://example.com/app"
+      }
+    },
+    {
+      "title": "Optimize website that's not loading on slow connections",
+      "description": "My website loads fine on fast connections but fails to load on slow mobile connections. The site has a lot of images and JavaScript. I've tried basic optimizations but it's still too heavy for slow connections. Need someone to optimize the site for slow connections and improve loading performance.",
+      "tech_stack": ["Web Development", "Performance Optimization", "Mobile"],
+      "price": 200.0,
+      "category": "frontend",
+      "links": {
+        "website": "https://example.com",
+        "performance_tools": "https://tools.example.com/performance"
+      }
+    }
+  ]
+}

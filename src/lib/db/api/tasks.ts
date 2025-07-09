@@ -345,4 +345,66 @@ export const tasksApi = {
       } | null;
     })[];
   },
+
+  // Get task summary for a user (total tasks and claimed tasks)
+  getSummary: async (supabase: SupabaseClient, userId: string) => {
+    // Get total tasks created by user
+    const { count: totalTasks, error: totalError } = await supabase
+      .from("tasks")
+      .select("*", { count: "exact", head: true })
+      .eq("creator_id", userId);
+
+    if (totalError) throw totalError;
+
+    // Get claimed tasks (tasks assigned to user)
+    const { count: claimedTasks, error: claimedError } = await supabase
+      .from("tasks")
+      .select("*", { count: "exact", head: true })
+      .eq("primary_assignee_id", userId);
+
+    if (claimedError) throw claimedError;
+
+    return {
+      totalTasks: totalTasks || 0,
+      claimedTasks: claimedTasks || 0,
+    };
+  },
+
+  // Get detailed task summary by status for a user
+  getDetailedSummary: async (supabase: SupabaseClient, userId: string) => {
+    // Get tasks created by user with status breakdown
+    const { data: createdTasks, error: createdError } = await supabase
+      .from("tasks")
+      .select("status")
+      .eq("creator_id", userId);
+
+    if (createdError) throw createdError;
+
+    // Get tasks assigned to user with status breakdown
+    const { data: assignedTasks, error: assignedError } = await supabase
+      .from("tasks")
+      .select("status")
+      .eq("primary_assignee_id", userId);
+
+    if (assignedError) throw assignedError;
+
+    // Count tasks by status for created tasks
+    const createdByStatus = createdTasks.reduce((acc, task) => {
+      acc[task.status] = (acc[task.status] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    // Count tasks by status for assigned tasks
+    const assignedByStatus = assignedTasks.reduce((acc, task) => {
+      acc[task.status] = (acc[task.status] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    return {
+      created: createdByStatus,
+      assigned: assignedByStatus,
+      totalCreated: createdTasks.length,
+      totalAssigned: assignedTasks.length,
+    };
+  },
 };

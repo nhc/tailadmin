@@ -13,7 +13,7 @@ import { useUserContext } from "@/context/UserContext";
 
 export default function UserMetaCard() {
   const { user, loading: isLoading } = useUserContext();
-  console.log(user);
+
   const { isOpen, openModal, closeModal } = useModal();
 
   const [userState, setUserState] = useState<typeof user | null>(null);
@@ -25,7 +25,7 @@ export default function UserMetaCard() {
   }, [user]);
 
   const handleSave = () => {
-    console.log("Saving changes...");
+    //console.log("Saving changes...");
     closeModal();
   };
 
