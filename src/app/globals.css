@@ -847,10 +847,11 @@ h6 {
 }
 
 p,
-span {
+span,
+div {
   @apply text-gray-500 dark:text-white/80;
 }
 
 svg {
-  @apply text-gray-300 dark:text-white/80 stroke-gray-500 dark:stroke-white/80;
+  @apply text-gray-500 dark:text-white/80;
 }
