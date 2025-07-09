@@ -836,3 +836,21 @@ span.flatpickr-weekday,
 .flatpickr-calendar.static {
   @apply right-0;
 }
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  @apply text-gray-800 dark:text-white/90 font-bold;
+}
+
+p,
+span {
+  @apply text-gray-500 dark:text-white/80;
+}
+
+svg {
+  @apply text-gray-300 dark:text-white/80 stroke-gray-500 dark:stroke-white/80;
+}
