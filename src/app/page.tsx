@@ -1,4 +1,5 @@
 import HomePage from "@/components/_pages/homepage/HomePage";
+import HomePageSearch from "@/components/_pages/homepage/HomePageSearch";
 import { SidebarProvider } from "@/context/SidebarContext";
 import AppHeaderHome from "@/layout/AppHeaderHome";
 
@@ -8,6 +9,7 @@ export default function Home() {
       <SidebarProvider>
         <AppHeaderHome />
         <HomePage />
+        <HomePageSearch />
       </SidebarProvider>
     </div>
   );

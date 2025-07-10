@@ -4,9 +4,15 @@ import { useEffect, useState } from "react";
 import { useUserContext } from "@/context/UserContext";
 import { createClient } from "@/lib/supabase/client";
 import { tasksApi } from "@/lib/db/api";
-import type { Task } from "@/lib/db/api/types";
+import type { Task, TaskStatus } from "@/lib/db/api/types";
 import Badge from "@/components/ui/badge/Badge";
-import { ClockIcon, DollarSignIcon, UserIcon, TagIcon } from "lucide-react";
+import {
+  ClockIcon,
+  DollarSignIcon,
+  UserIcon,
+  TagIcon,
+  InfoIcon,
+} from "lucide-react";
 
 type TaskWithRelations = Task & {
   creator: {
@@ -30,7 +36,7 @@ type TaskGroup = {
   tasks: TaskWithRelations[];
 };
 
-export const UserTasksView = () => {
+export const UserTasksView = ({ taskType }: { taskType: TaskStatus }) => {
   const { user } = useUserContext();
   const [tasks, setTasks] = useState<TaskWithRelations[]>([]);
   const [loading, setLoading] = useState(true);
@@ -63,7 +69,13 @@ export const UserTasksView = () => {
             index === self.findIndex((t) => t.id === task.id)
         );
 
-        setTasks(uniqueTasks);
+        console.log(uniqueTasks);
+        // Filter tasks by the specified taskType
+        const filteredTasks = uniqueTasks.filter(
+          (task) => task.status === taskType
+        );
+
+        setTasks(filteredTasks);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to fetch tasks");
       } finally {
@@ -77,7 +89,7 @@ export const UserTasksView = () => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "open":
-        return "info";
+        return "success";
       case "claimed":
         return "warning";
       case "delivered":
@@ -109,6 +121,25 @@ export const UserTasksView = () => {
         return "Cancelled";
       default:
         return status;
+    }
+  };
+
+  const getStatusDescription = (status: string) => {
+    switch (status) {
+      case "open":
+        return "Tasks that are open and have not yet been claimed by a coder";
+      case "claimed":
+        return "Tasks that have been claimed by a coder";
+      case "delivered":
+        return "Tasks that have been delivered by a coder";
+      case "completed":
+        return "Tasks that have been completed by a coder";
+      case "disputed":
+        return "Tasks that have been disputed by a coder";
+      case "cancelled":
+        return "Tasks that have been cancelled by a coder";
+      default:
+        return "Status not known";
     }
   };
 
@@ -149,7 +180,7 @@ export const UserTasksView = () => {
     return (
       <div className="space-y-6">
         <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
-          Your Tasks
+          Your {getStatusTitle(taskType)} Tasks
         </h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {[...Array(6)].map((_, i) => (
@@ -182,11 +213,13 @@ export const UserTasksView = () => {
     return (
       <div className="space-y-6">
         <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
-          Your Tasks
+          Your {getStatusTitle(taskType)} Tasks
         </h2>
         <div className="p-8 text-center bg-gray-50 rounded-xl dark:bg-gray-800">
           <p className="text-gray-500 dark:text-gray-400">
-            You don't have any tasks yet.
+            You don't have any{" "}
+            <span className="lowercase">{getStatusTitle(taskType)}</span> tasks
+            yet.
           </p>
         </div>
       </div>
@@ -195,9 +228,17 @@ export const UserTasksView = () => {
 
   return (
     <div className="space-y-8">
-      <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
-        Your Tasks ({tasks.length})
-      </h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
+          Your {getStatusTitle(taskType)} Tasks
+        </h2>
+        <div className="flex items-center gap-2">
+          <InfoIcon size={20} className="" />
+          <span className="text-sm text-gray-500 dark:text-gray-400">
+            {getStatusDescription(taskType)}
+          </span>
+        </div>
+      </div>
 
       {taskGroups.map((group) => (
         <div key={group.status} className="space-y-4">

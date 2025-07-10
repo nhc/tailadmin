@@ -110,7 +110,7 @@ export default function ActionCards() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       <div className="col-span-2">
-        <UserTasksView />
+        <UserTasksView taskType="open" />
       </div>
       <div className="col-span-1 border border-gray-200 rounded-lg p-4 my-6">
         <h2 className="text-lg font-bold mb-3">My Tasks</h2>
