@@ -37,6 +37,9 @@ export type User = {
   role: UserRole;
   stripe_account_id: string | null;
   onboarding_status: Record<string, unknown> | null;
+  nickname: string | null;
+  timezone: string | null;
+  location: string | null;
   created_at: string;
   updated_at: string;
 };

@@ -108,6 +108,9 @@ export const useUser = () => {
     user: userState.user,
     loading: userState.loading,
     error: userState.error,
+    isViber: userState.user?.role === "viber",
+    isCoder: userState.user?.role === "coder",
+    isAdmin: userState.user?.role === "admin",
     updateUser,
   };
 };

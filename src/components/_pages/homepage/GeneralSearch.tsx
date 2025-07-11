@@ -13,6 +13,7 @@ import {
   ClockIcon,
   UserIcon,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 type TaskWithRelations = Task & {
   creator: {
@@ -29,10 +30,16 @@ type TaskWithRelations = Task & {
   } | null;
 };
 
-export default function HomePageSearch({
-  hideSearch,
+export default function GeneralSearch({
+  showSearch = true,
+  showAllOpenTasks = false,
+  ctaComponent,
+  context = "homepage",
 }: {
-  hideSearch?: boolean;
+  showSearch?: boolean;
+  showAllOpenTasks?: boolean;
+  ctaComponent?: React.ReactNode;
+  context?: "homepage" | "dashboard";
 }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTech, setSelectedTech] = useState("");
@@ -40,13 +47,13 @@ export default function HomePageSearch({
   const [tasks, setTasks] = useState<TaskWithRelations[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showSearch, setShowSearch] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
-    if (hideSearch) {
-      setShowSearch(true);
+    if (showAllOpenTasks) {
+      handleAllOpenTasks();
     }
-  }, [hideSearch]);
+  }, [showAllOpenTasks]);
 
   const handleSearch = async (customFilters?: {
     status?: TaskStatus;
@@ -102,6 +109,8 @@ export default function HomePageSearch({
         );
       }
 
+      // Add a minimum delay to show loading state
+      await new Promise((resolve) => setTimeout(resolve, 500));
       setTasks(filteredTasks);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to search tasks");
@@ -174,7 +183,7 @@ export default function HomePageSearch({
           <h2 className="text-3xl font-bold text-gray-800 dark:text-white mb-4">
             Help out a viber and start earning
           </h2>
-          {!showSearch && (
+          {showSearch && (
             <p className="text-lg text-gray-600 dark:text-gray-400">
               Search through our tasks and find the perfect one for you.
             </p>
@@ -182,7 +191,7 @@ export default function HomePageSearch({
         </div>
 
         {/* Search Form */}
-        {!showSearch && (
+        {showSearch && (
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* Search Input */}
@@ -355,9 +364,16 @@ export default function HomePageSearch({
 
                   {/* Action Button */}
                   <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                    <button className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200">
-                      View Details
-                    </button>
+                    {ctaComponent || (
+                      <button
+                        className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200"
+                        onClick={() => {
+                          router.push("/dashboard/tasks/" + task.id);
+                        }}
+                      >
+                        View Details
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}

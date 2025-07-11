@@ -64,3 +64,26 @@ export const commonTools = [
   "Google Sheets",
   "Shopify",
 ];
+
+export const timezones = [
+  { code: "UTC", value: "UTC" },
+  { code: "EST", value: "America/New_York" },
+  { code: "CST", value: "America/Chicago" },
+  { code: "MST", value: "America/Denver" },
+  { code: "PST", value: "America/Los_Angeles" },
+  { code: "GMT", value: "Europe/London" },
+  { code: "CET", value: "Europe/Paris" },
+  { code: "EET", value: "Europe/Athens" },
+  { code: "JST", value: "Asia/Tokyo" },
+  { code: "CST", value: "Asia/Shanghai" },
+  { code: "IST", value: "Asia/Kolkata" },
+  { code: "AEST", value: "Australia/Sydney" },
+  { code: "NZST", value: "Pacific/Auckland" },
+  { code: "BRT", value: "America/Sao_Paulo" },
+  { code: "ART", value: "America/Argentina/Buenos_Aires" },
+  { code: "SAST", value: "Africa/Johannesburg" },
+  { code: "MSK", value: "Europe/Moscow" },
+  { code: "IST", value: "Asia/Jerusalem" },
+  { code: "GST", value: "Asia/Dubai" },
+  { code: "SGT", value: "Asia/Singapore" },
+];

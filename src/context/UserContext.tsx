@@ -9,6 +9,8 @@ type UserContextType = {
   loading: boolean;
   error: string | null;
   updateUser: (updates: Partial<User>) => Promise<void>;
+  isCoder: boolean;
+  isViber: boolean;
 };
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -20,8 +22,14 @@ type UserProviderProps = {
 export const UserProvider = ({ children }: UserProviderProps) => {
   const userData = useUser();
 
+  const contextValue = {
+    ...userData,
+    isCoder: userData.user?.role === "coder",
+    isViber: userData.user?.role === "viber",
+  };
+
   return (
-    <UserContext.Provider value={userData}>{children}</UserContext.Provider>
+    <UserContext.Provider value={contextValue}>{children}</UserContext.Provider>
   );
 };
 

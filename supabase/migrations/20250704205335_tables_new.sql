@@ -1,0 +1,160 @@
+-- Enable UUID extension
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- Create custom types/enums
+CREATE TYPE user_role AS ENUM ('viber', 'coder', 'admin', 'superuser');
+CREATE TYPE task_status AS ENUM ('open', 'claimed', 'delivered', 'completed', 'disputed', 'cancelled');
+CREATE TYPE claim_status AS ENUM ('pending', 'approved', 'rejected');
+CREATE TYPE payment_status AS ENUM ('pending', 'held', 'released', 'refunded', 'disputed');
+CREATE TYPE file_type AS ENUM ('image', 'video', 'code', 'other');
+CREATE TYPE notification_type AS ENUM ('task_claimed', 'task_completed', 'payment_released', 'general');
+CREATE TYPE audit_action AS ENUM ('task_created', 'task_claimed', 'task_delivered', 'task_completed', 'payment_processed', 'user_registered');
+CREATE TYPE entity_type AS ENUM ('task', 'claim', 'payment', 'user');
+
+-- Users table
+CREATE TABLE users (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    email VARCHAR(255) UNIQUE NOT NULL,
+    name VARCHAR(255),
+    avatar_url TEXT,
+    bio TEXT,
+    role user_role NOT NULL DEFAULT 'viber',
+    stripe_account_id VARCHAR(255),
+    onboarding_status JSONB DEFAULT '{}',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Tasks table
+CREATE TABLE tasks (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    title VARCHAR(255) NOT NULL,
+    description TEXT NOT NULL,
+    tech_stack TEXT[] DEFAULT '{}',
+    price DECIMAL(10,2) NOT NULL,
+    category VARCHAR(100) NOT NULL,
+    links JSONB DEFAULT '{}',
+    creator_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    primary_assignee_id UUID REFERENCES users(id) ON DELETE SET NULL,
+    is_private BOOLEAN DEFAULT FALSE,
+    status task_status DEFAULT 'open',
+    status_timestamps JSONB DEFAULT '{}',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Task secondary assignees table
+CREATE TABLE task_secondary_assignees (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    task_id UUID NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE(task_id, user_id)
+);
+
+-- Claims table
+CREATE TABLE claims (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    task_id UUID NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+    coder_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    message TEXT,
+    status claim_status DEFAULT 'pending',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    approved_at TIMESTAMP WITH TIME ZONE,
+    rejected_at TIMESTAMP WITH TIME ZONE,
+    UNIQUE(task_id, coder_id)
+);
+
+-- Payments table
+CREATE TABLE payments (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    task_id UUID NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+    viber_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    coder_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    amount DECIMAL(10,2) NOT NULL,
+    platform_fee DECIMAL(10,2) NOT NULL,
+    payout_amount DECIMAL(10,2) NOT NULL,
+    status payment_status DEFAULT 'pending',
+    stripe_payment_intent_id VARCHAR(255),
+    stripe_transfer_id VARCHAR(255),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    refunded_at TIMESTAMP WITH TIME ZONE,
+    disputed_at TIMESTAMP WITH TIME ZONE
+);
+
+-- Attachments table
+CREATE TABLE attachments (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    task_id UUID REFERENCES tasks(id) ON DELETE CASCADE,
+    claim_id UUID REFERENCES claims(id) ON DELETE CASCADE,
+    uploader_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    file_url TEXT NOT NULL,
+    file_type file_type NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    CHECK (task_id IS NOT NULL OR claim_id IS NOT NULL)
+);
+
+-- Audit trail table
+CREATE TABLE audit_trail (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+    action_type audit_action NOT NULL,
+    entity_type entity_type NOT NULL,
+    entity_id UUID NOT NULL,
+    metadata JSONB DEFAULT '{}',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Reviews table
+CREATE TABLE reviews (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    task_id UUID NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+    reviewer_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    reviewee_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
+    comment TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE(task_id, reviewer_id, reviewee_id)
+);
+
+-- Notifications table
+CREATE TABLE notifications (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    type notification_type NOT NULL,
+    content TEXT NOT NULL,
+    sent_via VARCHAR(50) DEFAULT 'email',
+    sent_at TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Create indexes for better performance
+CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX idx_users_role ON users(role);
+CREATE INDEX idx_tasks_creator_id ON tasks(creator_id);
+CREATE INDEX idx_tasks_assignee_id ON tasks(primary_assignee_id);
+CREATE INDEX idx_tasks_status ON tasks(status);
+CREATE INDEX idx_tasks_created_at ON tasks(created_at);
+CREATE INDEX idx_claims_task_id ON claims(task_id);
+CREATE INDEX idx_claims_coder_id ON claims(coder_id);
+CREATE INDEX idx_payments_task_id ON payments(task_id);
+CREATE INDEX idx_attachments_task_id ON attachments(task_id);
+CREATE INDEX idx_attachments_claim_id ON attachments(claim_id);
+CREATE INDEX idx_audit_trail_entity ON audit_trail(entity_type, entity_id);
+CREATE INDEX idx_reviews_task_id ON reviews(task_id);
+CREATE INDEX idx_notifications_user_id ON notifications(user_id);
+
+-- Create updated_at trigger function
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+-- Apply updated_at triggers
+CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_tasks_updated_at BEFORE UPDATE ON tasks FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_payments_updated_at BEFORE UPDATE ON payments FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
