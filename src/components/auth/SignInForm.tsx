@@ -5,7 +5,7 @@ import Label from "@/components/form/Label";
 import { ChevronLeftIcon, EyeCloseIcon, EyeIcon } from "@/icons";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { GitHubAuthButton } from "./github-auth-button";
 import { createClient } from "@/lib/supabase/client";
 import { useForm } from "react-hook-form";
@@ -28,6 +28,8 @@ export default function SignInForm() {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
+  console.log("🔍 SignInForm: Component rendered");
+
   const {
     register,
     handleSubmit,
@@ -43,11 +45,15 @@ export default function SignInForm() {
 
   const keepLoggedIn = watch("keepLoggedIn");
 
+  // Create Supabase client once
+  const supabase = useMemo(() => createClient(), []);
+
   const handleGoogleLogin = async () => {
-    const supabase = createClient();
+    console.log("🔍 SignInForm: Google login initiated");
     setIsGoogleLoading(true);
 
     try {
+      console.log("🔍 SignInForm: Attempting Google OAuth");
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
@@ -55,39 +61,90 @@ export default function SignInForm() {
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error("❌ SignInForm: Google OAuth error:", error);
+        throw error;
+      }
+      console.log("✅ SignInForm: Google OAuth initiated successfully");
     } catch (error: unknown) {
-      console.error("Google login error:", error);
+      console.error("❌ SignInForm: Google login error:", error);
     } finally {
       setIsGoogleLoading(false);
+      console.log("🔍 SignInForm: Google loading state reset");
     }
   };
 
   const onSubmit = async (data: SignInFormData) => {
+    console.log("🔍 SignInForm: Form submission started", {
+      email: data.email,
+      keepLoggedIn: data.keepLoggedIn,
+      hasPassword: !!data.password,
+    });
+
     setIsManualLoading(true);
     setError(null);
 
     try {
-      const supabase = createClient();
+      console.log("🔍 SignInForm: Using existing Supabase client");
+      console.log("🔍 SignInForm: Attempting password sign in");
+      console.log("🔍 SignInForm: About to call signInWithPassword with:", {
+        email: data.email,
+        passwordLength: data.password.length,
+      });
 
-      const { data: authData, error: signInError } =
-        await supabase.auth.signInWithPassword({
-          email: data.email,
-          password: data.password,
-        });
+      // Add timeout to the authentication call
+      const authPromise = supabase.auth.signInWithPassword({
+        email: data.email,
+        password: data.password,
+      });
+
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(
+          () => reject(new Error("Authentication timeout after 10 seconds")),
+          10000
+        );
+      });
+
+      const { data: authData, error: signInError } = (await Promise.race([
+        authPromise,
+        timeoutPromise,
+      ])) as any;
+
+      console.log("🔍 SignInForm: Sign in response received", {
+        hasUser: !!authData.user,
+        hasError: !!signInError,
+        errorMessage: signInError?.message,
+      });
 
       if (signInError) {
+        console.error("❌ SignInForm: Sign in error:", signInError);
         setError(signInError.message);
+        return;
       }
 
+      console.log("✅ SignInForm: Authentication successful", {
+        userId: authData.user?.id,
+        email: authData.user?.email,
+        session: !!authData.session,
+      });
+
       if (authData.user) {
+        console.log("🔍 SignInForm: Redirecting to dashboard");
         router.push(ROUTES.DASHBOARD.ROOT);
+      } else {
+        console.warn("⚠️ SignInForm: No user data in response");
       }
     } catch (error: any) {
-      console.error("Sign in error:", error);
+      console.error("❌ SignInForm: Unexpected error during sign in:", error);
+      console.error("❌ SignInForm: Error details:", {
+        message: error.message,
+        stack: error.stack,
+        name: error.name,
+      });
       setError(error.message || "An error occurred during sign in");
     } finally {
       setIsManualLoading(false);
+      console.log("🔍 SignInForm: Manual loading state reset");
     }
   };
 

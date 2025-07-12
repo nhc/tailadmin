@@ -39,11 +39,8 @@ export default function ActionCards() {
 
       try {
         const supabase = createClient();
-        const summary = await tasksApi.getSummary(supabase as any, user.id);
-        const detailed = await tasksApi.getDetailedSummary(
-          supabase as any,
-          user.id
-        );
+        const summary = await tasksApi.getSummary(supabase, user.id);
+        const detailed = await tasksApi.getDetailedSummary(supabase, user.id);
         setTaskSummary(summary);
         setDetailedSummary(detailed);
       } catch (error) {

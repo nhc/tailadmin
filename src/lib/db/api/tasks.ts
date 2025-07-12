@@ -242,6 +242,52 @@ export const tasksApi = {
     };
   },
 
+  // Get tasks by status and user ID
+  getByStatusWithUserId: async (
+    supabase: SupabaseClient,
+    status: TaskStatus,
+    userId: string,
+    page = 1,
+    limit = 50
+  ) => {
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
+
+    const { data, error, count } = await supabase
+      .from("tasks")
+      .select(
+        `
+        *,
+        creator:users!tasks_creator_id_fkey(id, name, email, avatar_url),
+        primary_assignee:users!tasks_primary_assignee_id_fkey(id, name, email, avatar_url)
+      `,
+        { count: "exact" }
+      )
+      .eq("status", status)
+      .or(`creator_id.eq.${userId},primary_assignee_id.eq.${userId}`)
+      .range(from, to)
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+    return {
+      data: data as (Task & {
+        creator: {
+          id: string;
+          name: string | null;
+          email: string;
+          avatar_url: string | null;
+        };
+        primary_assignee: {
+          id: string;
+          name: string | null;
+          email: string;
+          avatar_url: string | null;
+        } | null;
+      })[],
+      count,
+    };
+  },
+
   // Create new task
   create: async (supabase: SupabaseClient, task: InsertTask) => {
     const { data, error } = await supabase

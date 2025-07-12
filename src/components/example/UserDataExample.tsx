@@ -1,11 +1,9 @@
 "use client";
 
-import { useUserContext } from "@/context/UserContext";
-import { useAuth } from "@/lib/hooks/useAuth";
+import { useUser } from "@/lib/hooks/useUser";
 
-export const UserDataExample = () => {
-  const { user, loading, error } = useUserContext();
-  const { user: authUser, isAuthenticated } = useAuth();
+export default function UserDataExample() {
+  const { user, loading, error } = useUser();
 
   if (loading) {
     return <div>Loading user data...</div>;
@@ -25,7 +23,7 @@ export const UserDataExample = () => {
 
       <div className="space-y-2">
         <div>
-          <strong>Auth User ID:</strong> {authUser?.id}
+          <strong>Auth User ID:</strong> {user.id}
         </div>
         <div>
           <strong>Database User ID:</strong> {user.id}
@@ -54,4 +52,4 @@ export const UserDataExample = () => {
       </div>
     </div>
   );
-};
+}

@@ -94,7 +94,7 @@ export default function GeneralSearch({
         }
       }
 
-      const { data } = await tasksApi.getAll(supabase as any, filters);
+      const { data } = await tasksApi.getAll(supabase, filters);
       let filteredTasks = data || [];
 
       // Apply text search if query exists and no custom filters
@@ -137,7 +137,7 @@ export default function GeneralSearch({
       const supabase = createClient();
 
       // Get all open tasks and sort by price (higher first)
-      const { data } = await tasksApi.getAll(supabase as any, {
+      const { data } = await tasksApi.getAll(supabase, {
         status: "open" as TaskStatus,
       });
 

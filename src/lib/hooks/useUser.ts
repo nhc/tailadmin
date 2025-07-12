@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { usersApi } from "@/lib/db/api/users";
 import type { User } from "@/lib/db/api/types";
@@ -19,7 +19,7 @@ export const useUser = () => {
     error: null,
   });
 
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -36,7 +36,7 @@ export const useUser = () => {
         }
 
         // Fetch user data from database
-        const userData = await usersApi.getById(supabase as any, authUser.id);
+        const userData = await usersApi.getById(supabase, authUser.id);
         setUserState({ user: userData, loading: false, error: null });
       } catch (error) {
         setUserState({
@@ -63,10 +63,7 @@ export const useUser = () => {
 
       if (session?.user) {
         try {
-          const userData = await usersApi.getById(
-            supabase as any,
-            session.user.id
-          );
+          const userData = await usersApi.getById(supabase, session.user.id);
           setUserState({ user: userData, loading: false, error: null });
         } catch (error) {
           setUserState({
@@ -82,7 +79,7 @@ export const useUser = () => {
     });
 
     return () => subscription.unsubscribe();
-  }, [supabase]);
+  }, []);
 
   const updateUser = async (updates: Partial<User>) => {
     if (!userState.user) return;
@@ -90,7 +87,7 @@ export const useUser = () => {
     try {
       setUserState((prev) => ({ ...prev, loading: true }));
       const updatedUser = await usersApi.update(
-        supabase as any,
+        supabase,
         userState.user.id,
         updates
       );

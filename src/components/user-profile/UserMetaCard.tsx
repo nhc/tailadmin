@@ -9,10 +9,10 @@ import Image from "next/image";
 import { useAuth } from "@/lib/hooks/useAuth";
 import Badge from "../ui/badge/Badge";
 import { CircleUserRoundIcon } from "lucide-react";
-import { useUserContext } from "@/context/UserContext";
+import { useUser } from "@/lib/hooks/useUser";
 
 export default function UserMetaCard() {
-  const { user, loading: isLoading } = useUserContext();
+  const { user, loading: isLoading } = useUser();
 
   const { isOpen, openModal, closeModal } = useModal();
 

@@ -2,7 +2,7 @@
 
 import { createClient } from "@/lib/supabase/client";
 import Button from "@/components/ui/button/Button";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 
 export const GitHubAuthButton = () => {
@@ -10,8 +10,10 @@ export const GitHubAuthButton = () => {
   const searchParams = useSearchParams();
   const userType = searchParams.get("type");
 
+  // Create Supabase client once
+  const supabase = useMemo(() => createClient(), []);
+
   const handleGitHubLogin = async () => {
-    const supabase = createClient();
     setIsLoading(true);
 
     try {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useUserContext } from "@/context/UserContext";
+import { useUser } from "@/lib/hooks/useUser";
 import { createClient } from "@/lib/supabase/client";
 import { tasksApi } from "@/lib/db/api";
 import type { Task, TaskStatus } from "@/lib/db/api/types";
@@ -13,6 +13,36 @@ import {
   TagIcon,
   InfoIcon,
 } from "lucide-react";
+import { useTaskStateMachine } from "@/lib/hooks/useTaskStateMachine";
+
+// Task Status Message Component
+const TaskStatusMessage = ({
+  task,
+  user,
+  isViber,
+  isCoder,
+}: {
+  task: TaskWithRelations;
+  user: any;
+  isViber: boolean;
+  isCoder: boolean;
+}) => {
+  const isAssignee = task.primary_assignee?.id === user?.id;
+  const userRole = isViber ? "viber" : isCoder ? "coder" : "admin";
+
+  const { statusMessage } = useTaskStateMachine(
+    task.status as TaskStatus,
+    userRole,
+    isAssignee
+  );
+
+  return (
+    <div className="flex items-center gap-2 text-sm">
+      <UserIcon className="w-4 h-4 text-gray-500" />
+      <span className="text-gray-600 dark:text-gray-400">{statusMessage}</span>
+    </div>
+  );
+};
 
 type TaskWithRelations = Task & {
   creator: {
@@ -37,7 +67,7 @@ type TaskGroup = {
 };
 
 export const UserTasksView = ({ taskType }: { taskType: TaskStatus }) => {
-  const { user } = useUserContext();
+  const { user, isViber, isCoder } = useUser();
   const [tasks, setTasks] = useState<TaskWithRelations[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -52,13 +82,13 @@ export const UserTasksView = ({ taskType }: { taskType: TaskStatus }) => {
 
         // Fetch tasks created by the user
         const { data: createdTasks } = await tasksApi.getByCreator(
-          supabase as any,
+          supabase,
           user.id
         );
 
         // Fetch tasks assigned to the user
         const { data: assignedTasks } = await tasksApi.getByAssignee(
-          supabase as any,
+          supabase,
           user.id
         );
 
@@ -319,19 +349,13 @@ export const UserTasksView = ({ taskType }: { taskType: TaskStatus }) => {
                     </span>
                   </div>
 
-                  {task.primary_assignee && (
-                    <div className="flex items-center gap-2 text-sm">
-                      <UserIcon className="w-4 h-4 text-blue-500" />
-                      <span className="text-blue-600 dark:text-blue-400">
-                        {task.primary_assignee.id === user?.id
-                          ? "Assigned to you"
-                          : `Assigned to ${
-                              task.primary_assignee.name ||
-                              task.primary_assignee.email
-                            }`}
-                      </span>
-                    </div>
-                  )}
+                  {/* Assignment Status - Using state machine for consistent messaging */}
+                  <TaskStatusMessage
+                    task={task}
+                    user={user}
+                    isViber={isViber}
+                    isCoder={isCoder}
+                  />
                 </div>
               </div>
             ))}

@@ -180,29 +180,37 @@ Create notifications easily:
 ```typescript
 import { notificationsApi } from "@/lib/db/api";
 
-// Create a notification
-await notificationsApi.createNotification(
-  supabase,
-  userId,
-  "task_claimed",
-  'Your task "Fix login bug" has been claimed by John Doe'
-);
+// Create a notification for a user
+await notificationsApi.create(supabase, {
+  user_id: userId,
+  type: "task_claimed",
+  title: "Task Claimed",
+  message: "Your task has been claimed by a coder",
+  metadata: { taskId: "task-123" },
+});
 ```
 
-## Best Practices
+## Unified Client Architecture
 
-1. **Always handle errors** - Wrap API calls in try-catch blocks
-2. **Use pagination** - For large datasets, use pagination to avoid performance issues
-3. **Validate input** - Validate data before passing to API functions
-4. **Use appropriate functions** - Use specific functions (e.g., `getByStatus`) instead of filtering general functions
-5. **Cache when appropriate** - Cache frequently accessed data
-6. **Use transactions** - For operations that modify multiple tables, consider using database transactions
+This project uses a unified approach with `@supabase/supabase-js` for all database interactions:
 
-## Migration Notes
+### Client-Side Usage
 
-When the database schema changes:
+```typescript
+import { createClient } from "@/lib/supabase/client";
+const supabase = createClient();
+```
 
-1. Update the types in `types.ts`
-2. Update the corresponding API functions
-3. Update any code that uses the changed functions
-4. Test thoroughly to ensure backward compatibility
+### Server-Side Usage
+
+```typescript
+import { createClient } from "@/lib/supabase/server";
+const supabase = await createClient();
+```
+
+### Benefits
+
+- **Consistent API**: Same client type for all operations
+- **Type Safety**: Full TypeScript support without type casting
+- **Performance**: Optimized client creation and reuse
+- **Simplicity**: Single client configuration for all environments

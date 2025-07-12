@@ -1,11 +1,10 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { useAuth } from "@/lib/hooks/useAuth";
+import { useUser } from "@/lib/hooks/useUser";
 import Badge from "../ui/badge/Badge";
-import { useUserContext } from "@/context/UserContext";
 
 export default function UserInfoCard() {
-  const { user } = useUserContext();
+  const { user } = useUser();
   const [userState, setUserState] = useState<typeof user | null>(null);
 
   useEffect(() => {

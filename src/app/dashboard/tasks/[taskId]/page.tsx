@@ -7,7 +7,7 @@ import type { Task, TaskStatus } from "@/lib/db/api/types";
 import { useParams } from "next/navigation";
 import { ClockIcon, DollarSignIcon, TagIcon, UserIcon } from "lucide-react";
 import Badge from "@/components/ui/badge/Badge";
-import { useUserContext } from "@/context/UserContext";
+import { useUser } from "@/lib/hooks/useUser";
 import { useModal } from "@/hooks/useModal";
 import { Modal } from "@/components/ui/modal";
 import Button from "@/components/ui/button/Button";
@@ -31,7 +31,7 @@ type TaskWithRelations = Task & {
 };
 
 export const TaskDetailsPage = () => {
-  const { user } = useUserContext();
+  const { user } = useUser();
   const { isOpen, openModal, closeModal } = useModal();
   const {
     isOpen: isViberModalOpen,
@@ -130,7 +130,7 @@ export const TaskDetailsPage = () => {
       // Strip contact details from the message
       const sanitizedMessage = stripContactDetails(claimMessage);
 
-      await claimsApi.create(supabase as any, {
+      await claimsApi.create(supabase, {
         task_id: task.id,
         coder_id: user.id,
         message: sanitizedMessage || null,
@@ -158,7 +158,7 @@ export const TaskDetailsPage = () => {
 
       try {
         const supabase = createClient();
-        const data = await tasksApi.getById(supabase as any, taskId);
+        const data = await tasksApi.getById(supabase, taskId);
 
         if (!data) {
           throw new Error("Task not found");

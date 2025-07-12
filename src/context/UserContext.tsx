@@ -11,6 +11,7 @@ type UserContextType = {
   updateUser: (updates: Partial<User>) => Promise<void>;
   isCoder: boolean;
   isViber: boolean;
+  isAdmin: boolean;
 };
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -26,6 +27,7 @@ export const UserProvider = ({ children }: UserProviderProps) => {
     ...userData,
     isCoder: userData.user?.role === "coder",
     isViber: userData.user?.role === "viber",
+    isAdmin: userData.user?.role === "admin",
   };
 
   return (

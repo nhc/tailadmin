@@ -11,12 +11,12 @@ import TextArea from "@/components/form/input/TextArea";
 import Label from "@/components/form/Label";
 import Select from "@/components/form/Select";
 import Input from "@/components/form/input/InputField";
-import { useUserContext } from "@/context/UserContext";
+import { useUser } from "@/lib/hooks/useUser";
 import { PencilIcon } from "lucide-react";
 import { timezones } from "@/config/select-lists";
 
 export default function Profile() {
-  const { user, updateUser } = useUserContext();
+  const { user, updateUser } = useUser();
   const { isOpen, openModal, closeModal } = useModal();
 
   const [userState, setUserState] = useState<typeof user | null>(null);
