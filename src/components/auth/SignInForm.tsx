@@ -2,16 +2,18 @@
 import Checkbox from "@/components/form/input/Checkbox";
 import Input from "@/components/form/input/InputField";
 import Label from "@/components/form/Label";
-import { ChevronLeftIcon, EyeCloseIcon, EyeIcon } from "@/icons";
+import { EyeCloseIcon, EyeIcon } from "@/icons";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import React, { useState, useMemo } from "react";
+
+import React, { useState } from "react";
 import { GitHubAuthButton } from "./github-auth-button";
 import { createClient } from "@/lib/supabase/client";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+
 import { ROUTES } from "@/config/routes";
+import { signin } from "@/app/auth/signin/actions";
+import { z } from "zod";
 
 const signInSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -26,9 +28,6 @@ export default function SignInForm() {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isManualLoading, setIsManualLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
-
-  console.log("🔍 SignInForm: Component rendered");
 
   const {
     register,
@@ -46,14 +45,12 @@ export default function SignInForm() {
   const keepLoggedIn = watch("keepLoggedIn");
 
   // Create Supabase client once
-  const supabase = useMemo(() => createClient(), []);
+  const supabase = createClient();
 
   const handleGoogleLogin = async () => {
-    console.log("🔍 SignInForm: Google login initiated");
     setIsGoogleLoading(true);
 
     try {
-      console.log("🔍 SignInForm: Attempting Google OAuth");
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
@@ -62,103 +59,18 @@ export default function SignInForm() {
       });
 
       if (error) {
-        console.error("❌ SignInForm: Google OAuth error:", error);
         throw error;
       }
-      console.log("✅ SignInForm: Google OAuth initiated successfully");
     } catch (error: unknown) {
-      console.error("❌ SignInForm: Google login error:", error);
+      setError("Failed to connect to Google. Please try again.");
     } finally {
       setIsGoogleLoading(false);
-      console.log("🔍 SignInForm: Google loading state reset");
-    }
-  };
-
-  const onSubmit = async (data: SignInFormData) => {
-    console.log("🔍 SignInForm: Form submission started", {
-      email: data.email,
-      keepLoggedIn: data.keepLoggedIn,
-      hasPassword: !!data.password,
-    });
-
-    setIsManualLoading(true);
-    setError(null);
-
-    try {
-      console.log("🔍 SignInForm: Using existing Supabase client");
-      console.log("🔍 SignInForm: Attempting password sign in");
-      console.log("🔍 SignInForm: About to call signInWithPassword with:", {
-        email: data.email,
-        passwordLength: data.password.length,
-      });
-
-      // Add timeout to the authentication call
-      const authPromise = supabase.auth.signInWithPassword({
-        email: data.email,
-        password: data.password,
-      });
-
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(
-          () => reject(new Error("Authentication timeout after 10 seconds")),
-          10000
-        );
-      });
-
-      const { data: authData, error: signInError } = (await Promise.race([
-        authPromise,
-        timeoutPromise,
-      ])) as any;
-
-      console.log("🔍 SignInForm: Sign in response received", {
-        hasUser: !!authData.user,
-        hasError: !!signInError,
-        errorMessage: signInError?.message,
-      });
-
-      if (signInError) {
-        console.error("❌ SignInForm: Sign in error:", signInError);
-        setError(signInError.message);
-        return;
-      }
-
-      console.log("✅ SignInForm: Authentication successful", {
-        userId: authData.user?.id,
-        email: authData.user?.email,
-        session: !!authData.session,
-      });
-
-      if (authData.user) {
-        console.log("🔍 SignInForm: Redirecting to dashboard");
-        router.push(ROUTES.DASHBOARD.ROOT);
-      } else {
-        console.warn("⚠️ SignInForm: No user data in response");
-      }
-    } catch (error: any) {
-      console.error("❌ SignInForm: Unexpected error during sign in:", error);
-      console.error("❌ SignInForm: Error details:", {
-        message: error.message,
-        stack: error.stack,
-        name: error.name,
-      });
-      setError(error.message || "An error occurred during sign in");
-    } finally {
-      setIsManualLoading(false);
-      console.log("🔍 SignInForm: Manual loading state reset");
     }
   };
 
   return (
     <div className="flex flex-col flex-1 lg:w-1/2 w-full overflow-y-auto no-scrollbar">
-      <div className="w-full max-w-md sm:pt-10 mx-auto mb-5">
-        {/* <Link
-          href="/"
-          className="inline-flex items-center text-sm text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-        >
-          <ChevronLeftIcon />
-          Back to dashboard
-        </Link> */}
-      </div>
+      <div className="w-full max-w-md sm:pt-10 mx-auto mb-5"></div>
       <div className="flex flex-col justify-center flex-1 w-full max-w-md mx-auto">
         <div>
           <div className="mb-5 sm:mb-8">
@@ -201,9 +113,7 @@ export default function SignInForm() {
                     fill="#EB4335"
                   />
                 </svg>
-                {isGoogleLoading
-                  ? "Connecting to Google..."
-                  : "Sign in with Google"}
+                {isGoogleLoading ? "Connecting to Google..." : "Sign in with Google"}
               </button>
               <GitHubAuthButton />
             </div>
@@ -224,7 +134,7 @@ export default function SignInForm() {
               </div>
             )}
 
-            <form onSubmit={handleSubmit(onSubmit)}>
+            <form onSubmit={handleSubmit(signin)}>
               <div className="space-y-6">
                 <div>
                   <Label>
@@ -304,7 +214,7 @@ export default function SignInForm() {
               <p className="text-sm font-normal text-center text-gray-700 dark:text-gray-400 sm:text-start">
                 Don&apos;t have an account?{" "}
                 <Link
-                  href="/signup"
+                  href={ROUTES.AUTH.SIGN_UP_VIBER}
                   className="text-brand-500 hover:text-brand-600 dark:text-brand-400"
                 >
                   Sign Up

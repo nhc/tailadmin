@@ -1,19 +1,31 @@
-"use client";
+import { redirect } from "next/navigation";
 import ActionCards from "@/components/_pages/dashboard/ActionCards";
-import { useUser } from "@/lib/hooks/useUser";
-import { useAuth } from "@/lib/hooks/useAuth";
-import { useUserContext } from "@/context/UserContext";
+import { useServerUser } from "@/lib/hooks/useServerUser";
 
-export default function Dashboard() {
-  const { user } = useUser();
-  const { user: authUser } = useAuth();
-  const { user: userData } = useUserContext();
+export default async function Dashboard() {
+  const { authUser, userData, error } = await useServerUser();
 
-  console.log(user, authUser, userData);
+  if (error || !authUser) {
+    redirect("/auth/signin?error=" + error);
+  }
+
   return (
     <section>
       <div className="">
-        Dashboard hello {user?.email} {user?.id}
+        <h1>Dashboard</h1>
+        <p>Welcome, {userData?.nickname || userData?.email || authUser.email}!</p>
+        {userData && (
+          <div>
+            <p>Role: {userData.role}</p>
+            <p>User ID: {userData.id}</p>
+            {userData.stripe_account_id && <p>Stripe Connected: Yes</p>}
+          </div>
+        )}
+        {!userData && (
+          <div className="text-yellow-600">
+            <p>Note: User profile not found in database</p>
+          </div>
+        )}
       </div>
       <ActionCards />
     </section>

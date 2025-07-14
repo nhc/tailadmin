@@ -1,10 +1,7 @@
-"use client";
-
 import { useEffect, useState, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { usersApi } from "@/lib/db/api/users";
 import type { User } from "@/lib/db/api/types";
-import type { SupabaseClient } from "@supabase/supabase-js";
 
 type UserState = {
   user: User | null;
@@ -19,7 +16,7 @@ export const useUser = () => {
     error: null,
   });
 
-  const supabase = useMemo(() => createClient(), []);
+  const supabase = createClient();
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -29,6 +26,8 @@ export const useUser = () => {
           data: { user: authUser },
           error: authError,
         } = await supabase.auth.getUser();
+
+        console.log("useUser: fetchUser", authUser, authError);
 
         if (authError || !authUser) {
           setUserState({ user: null, loading: false, error: null });
@@ -42,10 +41,7 @@ export const useUser = () => {
         setUserState({
           user: null,
           loading: false,
-          error:
-            error instanceof Error
-              ? error.message
-              : "Failed to fetch user data",
+          error: error instanceof Error ? error.message : "Failed to fetch user data",
         });
       }
     };
@@ -69,10 +65,7 @@ export const useUser = () => {
           setUserState({
             user: null,
             loading: false,
-            error:
-              error instanceof Error
-                ? error.message
-                : "Failed to fetch user data",
+            error: error instanceof Error ? error.message : "Failed to fetch user data",
           });
         }
       }
@@ -86,11 +79,7 @@ export const useUser = () => {
 
     try {
       setUserState((prev) => ({ ...prev, loading: true }));
-      const updatedUser = await usersApi.update(
-        supabase,
-        userState.user.id,
-        updates
-      );
+      const updatedUser = await usersApi.update(supabase, userState.user.id, updates);
       setUserState({ user: updatedUser, loading: false, error: null });
     } catch (error) {
       setUserState((prev) => ({

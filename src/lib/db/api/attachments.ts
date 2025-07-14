@@ -64,12 +64,7 @@ export const attachmentsApi = {
   },
 
   // Get attachments by uploader
-  getByUploader: async (
-    supabase: SupabaseClient,
-    uploaderId: string,
-    page = 1,
-    limit = 50
-  ) => {
+  getByUploader: async (supabase: SupabaseClient, uploaderId: string, page = 1, limit = 50) => {
     const from = (page - 1) * limit;
     const to = from + limit - 1;
 
@@ -98,12 +93,7 @@ export const attachmentsApi = {
   },
 
   // Get attachments by file type
-  getByFileType: async (
-    supabase: SupabaseClient,
-    fileType: FileType,
-    page = 1,
-    limit = 50
-  ) => {
+  getByFileType: async (supabase: SupabaseClient, fileType: FileType, page = 1, limit = 50) => {
     const from = (page - 1) * limit;
     const to = from + limit - 1;
 
@@ -135,11 +125,7 @@ export const attachmentsApi = {
 
   // Create new attachment
   create: async (supabase: SupabaseClient, attachment: InsertAttachment) => {
-    const { data, error } = await supabase
-      .from("attachments")
-      .insert(attachment)
-      .select()
-      .single();
+    const { data, error } = await supabase.from("attachments").insert(attachment).select().single();
 
     if (error) throw error;
     return data as Attachment;
@@ -155,10 +141,7 @@ export const attachmentsApi = {
 
   // Delete attachments by task
   deleteByTask: async (supabase: SupabaseClient, taskId: string) => {
-    const { error } = await supabase
-      .from("attachments")
-      .delete()
-      .eq("task_id", taskId);
+    const { error } = await supabase.from("attachments").delete().eq("task_id", taskId);
 
     if (error) throw error;
     return true;
@@ -166,10 +149,7 @@ export const attachmentsApi = {
 
   // Delete attachments by claim
   deleteByClaim: async (supabase: SupabaseClient, claimId: string) => {
-    const { error } = await supabase
-      .from("attachments")
-      .delete()
-      .eq("claim_id", claimId);
+    const { error } = await supabase.from("attachments").delete().eq("claim_id", claimId);
 
     if (error) throw error;
     return true;

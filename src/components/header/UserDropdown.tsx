@@ -18,6 +18,9 @@ import Badge from "../ui/badge/Badge";
 
 export default function UserDropdown() {
   const { user } = useUser();
+
+  console.log("useuser user", user);
+
   const [isOpen, setIsOpen] = useState(false);
 
   const userName = user?.name || user?.email;
@@ -51,9 +54,7 @@ export default function UserDropdown() {
           )}
         </span>
 
-        <span className="block mr-1 font-medium text-theme-sm">
-          {user?.name}
-        </span>
+        <span className="block mr-1 font-medium text-theme-sm">{user?.name}</span>
 
         {isOpen ? <ChevronUpIcon size={20} /> : <ChevronDownIcon size={20} />}
       </button>

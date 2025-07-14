@@ -1,15 +1,18 @@
-import React from "react";
+import { useServerUser } from "@/lib/hooks/useServerUser";
 import Badge from "../ui/badge/Badge";
-import type { User } from "@/lib/db/api/types";
 
-type UserInfoCardProps = {
-  user: User | null;
-};
+export async function ServerUserInfoCard() {
+  const { authUser, userData, error } = await useServerUser();
 
-export default function UserInfoCard({ user }: UserInfoCardProps) {
-  if (!user) {
-    return <div>Loading...</div>;
+  if (error || !authUser) {
+    return <div>Not authenticated</div>;
   }
+
+  const user = userData || {
+    email: authUser.email,
+    nickname: null,
+    stripe_account_id: null,
+  };
 
   return (
     <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
@@ -42,12 +45,14 @@ export default function UserInfoCard({ user }: UserInfoCardProps) {
             </p>
           </div>
 
-          <div>
-            <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">Bio</p>
-            <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-              {user.bio || "Please add a bio to your profile"}
-            </p>
-          </div>
+          {userData && (
+            <div>
+              <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">Role</p>
+              <p className="text-sm font-medium text-gray-800 dark:text-white/90">
+                <Badge color="info">{userData.role}</Badge>
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>

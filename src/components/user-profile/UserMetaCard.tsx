@@ -1,35 +1,29 @@
 "use client";
-import React, { useEffect, useState } from "react";
+
+import React from "react";
 import { useModal } from "../../hooks/useModal";
 import { Modal } from "../ui/modal";
 import Button from "../ui/button/Button";
 import Input from "../form/input/InputField";
 import Label from "../form/Label";
 import Image from "next/image";
-import { useAuth } from "@/lib/hooks/useAuth";
 import Badge from "../ui/badge/Badge";
 import { CircleUserRoundIcon } from "lucide-react";
-import { useUser } from "@/lib/hooks/useUser";
+import type { User } from "@/lib/db/api/types";
 
-export default function UserMetaCard() {
-  const { user, loading: isLoading } = useUser();
+type UserMetaCardProps = {
+  user: User | null;
+};
 
+export default function UserMetaCard({ user }: UserMetaCardProps) {
   const { isOpen, openModal, closeModal } = useModal();
-
-  const [userState, setUserState] = useState<typeof user | null>(null);
-
-  useEffect(() => {
-    if (user) {
-      setUserState(user);
-    }
-  }, [user]);
 
   const handleSave = () => {
     //console.log("Saving changes...");
     closeModal();
   };
 
-  if (!userState) {
+  if (!user) {
     return <div>Loading...</div>;
   }
 
@@ -40,31 +34,25 @@ export default function UserMetaCard() {
           <div className="flex flex-col items-center w-full gap-6 xl:flex-row">
             {/* <pre>{JSON.stringify(userState, null, 2)}</pre> */}
             <div className="w-20 h-20 overflow-hidden border border-gray-200 rounded-full dark:border-gray-800">
-              {userState?.avatar_url ? (
-                <Image
-                  width={80}
-                  height={80}
-                  src={userState.avatar_url}
-                  alt="user"
-                />
+              {user?.avatar_url ? (
+                <Image width={80} height={80} src={user.avatar_url} alt="user" />
               ) : (
                 <CircleUserRoundIcon size={80} strokeWidth={2} />
               )}
             </div>
             <div className="order-3 xl:order-2">
               <h4 className="mb-2 text-lg font-semibold text-center text-gray-800 dark:text-white/90 xl:text-left">
-                {userState?.name}
+                {user?.name}
               </h4>
               <div className="flex flex-col items-center gap-1 text-center xl:flex-row xl:gap-3 xl:text-left">
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   <Badge color="primary">
-                    You are a{" "}
-                    <span className="capitalize">{userState?.role}</span>
+                    You are a <span className="capitalize">{user?.role}</span>
                   </Badge>
                 </p>
                 <div className="hidden h-3.5 w-px bg-gray-300 dark:bg-gray-700 xl:block"></div>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {`${userState?.location} (${userState?.timezone})`}
+                  {`${user?.location || "No location"} (${user?.timezone || "No timezone"})`}
                 </p>
               </div>
             </div>
@@ -112,10 +100,7 @@ export default function UserMetaCard() {
                 <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
                   <div>
                     <Label>Facebook</Label>
-                    <Input
-                      type="text"
-                      defaultValue="https://www.facebook.com/PimjoHQ"
-                    />
+                    <Input type="text" defaultValue="https://www.facebook.com/PimjoHQ" />
                   </div>
 
                   <div>
@@ -125,18 +110,12 @@ export default function UserMetaCard() {
 
                   <div>
                     <Label>Linkedin</Label>
-                    <Input
-                      type="text"
-                      defaultValue="https://www.linkedin.com/company/pimjo"
-                    />
+                    <Input type="text" defaultValue="https://www.linkedin.com/company/pimjo" />
                   </div>
 
                   <div>
                     <Label>Instagram</Label>
-                    <Input
-                      type="text"
-                      defaultValue="https://instagram.com/PimjoHQ"
-                    />
+                    <Input type="text" defaultValue="https://instagram.com/PimjoHQ" />
                   </div>
                 </div>
               </div>

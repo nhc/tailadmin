@@ -93,6 +93,7 @@ export default function SignUpForm() {
       if (error) throw error;
     } catch (error: unknown) {
       console.error("Google login error:", error);
+      setError("Failed to connect to Google. Please try again.");
     } finally {
       setIsGoogleLoading(false);
     }
@@ -132,11 +133,12 @@ export default function SignUpForm() {
       if (authData.user) {
         // Create user profile in our users table
         const role = userType.toLowerCase() as "viber" | "coder";
+        const fullName = `${data.firstName} ${data.lastName}`;
 
         const { error: profileError } = await supabase.from("users").insert({
           id: authData.user.id,
           email: data.email,
-          name: `${data.firstName} ${data.lastName}`,
+          name: fullName,
           avatar_url: null,
           bio: null,
           role,
@@ -147,6 +149,7 @@ export default function SignUpForm() {
         if (profileError) {
           console.error("Error creating user profile:", profileError);
           // Don't throw here as the auth was successful
+          // The user can complete their profile later
         }
 
         // Check if email confirmation is required
@@ -168,8 +171,16 @@ export default function SignUpForm() {
         );
       } else if (error.message?.includes("password")) {
         setError("Password must be at least 8 characters long.");
+      } else if (error.message?.includes("Invalid email")) {
+        setError("Please enter a valid email address.");
+      } else if (error.message?.includes("weak password")) {
+        setError(
+          "Password must be stronger. Include uppercase, lowercase, and numbers."
+        );
       } else {
-        setError(error.message || "An error occurred during sign up");
+        setError(
+          error.message || "An error occurred during sign up. Please try again."
+        );
       }
     } finally {
       setIsManualLoading(false);
@@ -378,9 +389,9 @@ export default function SignUpForm() {
 
             <div className="mt-5">
               <p className="text-sm font-normal text-center text-gray-700 dark:text-gray-400 sm:text-start">
-                Already have an account?
+                Already have an account?{" "}
                 <Link
-                  href="/signin"
+                  href={ROUTES.AUTH.LOGIN}
                   className="text-brand-500 hover:text-brand-600 dark:text-brand-400"
                 >
                   Sign In

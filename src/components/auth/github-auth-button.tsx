@@ -32,6 +32,8 @@ export const GitHubAuthButton = () => {
       if (error) throw error;
     } catch (error: unknown) {
       console.error("GitHub login error:", error);
+      // Note: We can't set error state here since this component doesn't have access to the form's error state
+      // The error will be handled by the callback route
     } finally {
       setIsLoading(false);
     }

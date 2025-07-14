@@ -16,23 +16,18 @@ type UserContextType = {
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
-type UserProviderProps = {
-  children: ReactNode;
-};
-
-export const UserProvider = ({ children }: UserProviderProps) => {
-  const userData = useUser();
-
-  const contextValue = {
-    ...userData,
-    isCoder: userData.user?.role === "coder",
-    isViber: userData.user?.role === "viber",
-    isAdmin: userData.user?.role === "admin",
+export const UserProvider = ({ user, children }: { user: User | null; children: ReactNode }) => {
+  const contextValue: UserContextType = {
+    user,
+    isCoder: user?.role === "coder",
+    isViber: user?.role === "viber",
+    isAdmin: user?.role === "admin",
+    loading: false,
+    error: null,
+    updateUser: async () => {},
   };
 
-  return (
-    <UserContext.Provider value={contextValue}>{children}</UserContext.Provider>
-  );
+  return <UserContext.Provider value={contextValue}>{children}</UserContext.Provider>;
 };
 
 export const useUserContext = () => {

@@ -5,21 +5,23 @@ import { UserProvider } from "@/context/UserContext";
 import "./globals.css";
 import "swiper/swiper-bundle.css";
 import "simplebar-react/dist/simplebar.min.css";
+import { useServerUser } from "@/lib/hooks/useServerUser";
 
 const outfit = Outfit({
   subsets: ["latin"],
 });
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const { userData } = await useServerUser();
   return (
     <html lang="en">
       <body className={`${outfit.className} dark:bg-gray-900`}>
         <ThemeProvider>
-          <UserProvider>
+          <UserProvider user={userData}>
             <SidebarProvider>{children}</SidebarProvider>
           </UserProvider>
         </ThemeProvider>
