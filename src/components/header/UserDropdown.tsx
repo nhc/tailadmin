@@ -13,13 +13,11 @@ import {
   ChevronUpIcon,
 } from "lucide-react";
 import { LogoutButton } from "../auth/logout-button";
-import { useUser } from "@/lib/hooks/useUser";
+import { useUserContext } from "@/context/UserContext";
 import Badge from "../ui/badge/Badge";
 
 export default function UserDropdown() {
-  const { user } = useUser();
-
-  console.log("useuser user", user);
+  const { user } = useUserContext();
 
   const [isOpen, setIsOpen] = useState(false);
 

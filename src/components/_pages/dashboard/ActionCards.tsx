@@ -1,7 +1,7 @@
 "use client";
 
 import { tasksApi } from "@/lib/db/api/tasks";
-import { useUser } from "@/lib/hooks/useUser";
+import { useUserContext } from "@/context/UserContext";
 import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -20,7 +20,7 @@ type DetailedTaskSummary = {
 };
 
 export default function ActionCards() {
-  const { user } = useUser();
+  const { user } = useUserContext();
   const [taskSummary, setTaskSummary] = useState<TaskSummary>({
     totalTasks: 0,
     claimedTasks: 0,
@@ -120,9 +120,7 @@ export default function ActionCards() {
           <div className="space-y-1">
             {Object.entries(detailedSummary.created).map(([status, count]) => (
               <div key={status} className="flex justify-between text-sm">
-                <span className={getStatusColor(status)}>
-                  {getStatusLabel(status)}
-                </span>
+                <span className={getStatusColor(status)}>{getStatusLabel(status)}</span>
                 <span className="font-medium">{count}</span>
               </div>
             ))}
@@ -140,9 +138,7 @@ export default function ActionCards() {
           <div className="space-y-1">
             {Object.entries(detailedSummary.assigned).map(([status, count]) => (
               <div key={status} className="flex justify-between text-sm">
-                <span className={getStatusColor(status)}>
-                  {getStatusLabel(status)}
-                </span>
+                <span className={getStatusColor(status)}>{getStatusLabel(status)}</span>
                 <span className="font-medium">{count}</span>
               </div>
             ))}
@@ -159,10 +155,7 @@ export default function ActionCards() {
           >
             Create task
           </Link>
-          <Link
-            href="/dashboard/tasks"
-            className="text-blue-600 hover:text-blue-800 text-sm"
-          >
+          <Link href="/dashboard/tasks" className="text-blue-600 hover:text-blue-800 text-sm">
             View all tasks
           </Link>
         </div>

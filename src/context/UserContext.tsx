@@ -1,7 +1,6 @@
 "use client";
 
 import { createContext, useContext, ReactNode } from "react";
-import { useUser } from "@/lib/hooks/useUser";
 import type { User } from "@/lib/db/api/types";
 
 type UserContextType = {

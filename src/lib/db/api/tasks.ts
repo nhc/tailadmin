@@ -1,4 +1,5 @@
-import { SupabaseClient } from "@supabase/supabase-js";
+import { createClient } from "@/lib/supabase/server";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Task, InsertTask, UpdateTask, TaskStatus } from "./types";
 
 export const tasksApi = {
@@ -111,12 +112,7 @@ export const tasksApi = {
   },
 
   // Get tasks by creator
-  getByCreator: async (
-    supabase: SupabaseClient,
-    creatorId: string,
-    page = 1,
-    limit = 50
-  ) => {
+  getByCreator: async (supabase: SupabaseClient, creatorId: string, page = 1, limit = 50) => {
     const from = (page - 1) * limit;
     const to = from + limit - 1;
 
@@ -155,12 +151,7 @@ export const tasksApi = {
   },
 
   // Get tasks by assignee
-  getByAssignee: async (
-    supabase: SupabaseClient,
-    assigneeId: string,
-    page = 1,
-    limit = 50
-  ) => {
+  getByAssignee: async (supabase: SupabaseClient, assigneeId: string, page = 1, limit = 50) => {
     const from = (page - 1) * limit;
     const to = from + limit - 1;
 
@@ -199,12 +190,7 @@ export const tasksApi = {
   },
 
   // Get tasks by status
-  getByStatus: async (
-    supabase: SupabaseClient,
-    status: TaskStatus,
-    page = 1,
-    limit = 50
-  ) => {
+  getByStatus: async (supabase: SupabaseClient, status: TaskStatus, page = 1, limit = 50) => {
     const from = (page - 1) * limit;
     const to = from + limit - 1;
 
@@ -290,11 +276,7 @@ export const tasksApi = {
 
   // Create new task
   create: async (supabase: SupabaseClient, task: InsertTask) => {
-    const { data, error } = await supabase
-      .from("tasks")
-      .insert(task)
-      .select()
-      .single();
+    const { data, error } = await supabase.from("tasks").insert(task).select().single();
 
     if (error) throw error;
     return data as Task;
@@ -322,11 +304,7 @@ export const tasksApi = {
   },
 
   // Update task status
-  updateStatus: async (
-    supabase: SupabaseClient,
-    id: string,
-    status: TaskStatus
-  ) => {
+  updateStatus: async (supabase: SupabaseClient, id: string, status: TaskStatus) => {
     const statusTimestamps = { [status]: new Date().toISOString() };
 
     const { data, error } = await supabase

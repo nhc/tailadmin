@@ -1,9 +1,9 @@
 "use client";
 
-import { useUser } from "@/lib/hooks/useUser";
+import { useUserContext } from "@/context/UserContext";
 
 export default function UserDataExample() {
-  const { user, loading, error } = useUser();
+  const { user, loading, error } = useUserContext();
 
   if (loading) {
     return <div>Loading user data...</div>;
@@ -38,16 +38,13 @@ export default function UserDataExample() {
           <strong>Role:</strong> {user.role}
         </div>
         <div>
-          <strong>Stripe Account:</strong>{" "}
-          {user.stripe_account_id || "Not connected"}
+          <strong>Stripe Account:</strong> {user.stripe_account_id || "Not connected"}
         </div>
         <div>
-          <strong>Onboarding Status:</strong>{" "}
-          {user.onboarding_status ? "In Progress" : "Completed"}
+          <strong>Onboarding Status:</strong> {user.onboarding_status ? "In Progress" : "Completed"}
         </div>
         <div>
-          <strong>Created:</strong>{" "}
-          {new Date(user.created_at).toLocaleDateString()}
+          <strong>Created:</strong> {new Date(user.created_at).toLocaleDateString()}
         </div>
       </div>
     </div>

@@ -1,7 +1,6 @@
 "use client";
 import React, { useEffect, useRef, useCallback, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useSidebar } from "../context/SidebarContext";
 import {
@@ -24,7 +23,7 @@ import {
 import SidebarWidget from "./SidebarWidget";
 import Last20Logo from "@/components/_content/Last20Logo";
 import { SearchIcon, TicketIcon } from "lucide-react";
-import { useUser } from "@/lib/hooks/useUser";
+import { useUserContext } from "@/context/UserContext";
 
 type NavItem = {
   name: string;
@@ -226,9 +225,7 @@ const supportItems: NavItem[] = [
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const pathname = usePathname();
-  const { isViber, isCoder, isAdmin, user } = useUser();
-
-  console.log("user sidebar", user);
+  const { isViber, isCoder, isAdmin } = useUserContext();
 
   const renderMenuItems = (navItems: NavItem[], menuType: "main" | "support" | "others") => {
     // Filter items based on user role

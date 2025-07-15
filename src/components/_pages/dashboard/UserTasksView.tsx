@@ -1,18 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useUser } from "@/lib/hooks/useUser";
-import { createClient } from "@/lib/supabase/client";
+import { useUserContext } from "@/context/UserContext";
+import { supabase } from "@/lib/supabase/client-db-conn";
 import { tasksApi } from "@/lib/db/api";
-import type { Task, TaskStatus } from "@/lib/db/api/types";
+import type { Task, TaskStatus, User } from "@/lib/db/api/types";
 import Badge from "@/components/ui/badge/Badge";
-import {
-  ClockIcon,
-  DollarSignIcon,
-  UserIcon,
-  TagIcon,
-  InfoIcon,
-} from "lucide-react";
+import { ClockIcon, DollarSignIcon, UserIcon, TagIcon, InfoIcon } from "lucide-react";
 import { useTaskStateMachine } from "@/lib/hooks/useTaskStateMachine";
 
 // Task Status Message Component
@@ -30,11 +24,7 @@ const TaskStatusMessage = ({
   const isAssignee = task.primary_assignee?.id === user?.id;
   const userRole = isViber ? "viber" : isCoder ? "coder" : "admin";
 
-  const { statusMessage } = useTaskStateMachine(
-    task.status as TaskStatus,
-    userRole,
-    isAssignee
-  );
+  const { statusMessage } = useTaskStateMachine(task.status as TaskStatus, userRole, isAssignee);
 
   return (
     <div className="flex items-center gap-2 text-sm">
@@ -66,44 +56,36 @@ type TaskGroup = {
   tasks: TaskWithRelations[];
 };
 
-export const UserTasksView = ({ taskType }: { taskType: TaskStatus }) => {
-  const { user, isViber, isCoder } = useUser();
+export const UserTasksView = ({ user, taskType }: { user: User; taskType: TaskStatus }) => {
+  const { isViber, isCoder } = useUserContext();
   const [tasks, setTasks] = useState<TaskWithRelations[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchUserTasks = async () => {
+      console.log("fetchUserTasks", user);
       if (!user) return;
 
       try {
         setLoading(true);
-        const supabase = createClient();
+        // const supabase = createClient();
 
         // Fetch tasks created by the user
-        const { data: createdTasks } = await tasksApi.getByCreator(
-          supabase,
-          user.id
-        );
+        const { data: createdTasks } = await tasksApi.getByCreator(supabase, user.id);
 
         // Fetch tasks assigned to the user
-        const { data: assignedTasks } = await tasksApi.getByAssignee(
-          supabase,
-          user.id
-        );
+        const { data: assignedTasks } = await tasksApi.getByAssignee(supabase, user.id);
 
         // Combine and deduplicate tasks
         const allTasks = [...(createdTasks || []), ...(assignedTasks || [])];
         const uniqueTasks = allTasks.filter(
-          (task, index, self) =>
-            index === self.findIndex((t) => t.id === task.id)
+          (task, index, self) => index === self.findIndex((t) => t.id === task.id)
         );
 
-        console.log(uniqueTasks);
+        console.log("uniqueTasks", uniqueTasks);
         // Filter tasks by the specified taskType
-        const filteredTasks = uniqueTasks.filter(
-          (task) => task.status === taskType
-        );
+        const filteredTasks = uniqueTasks.filter((task) => task.status === taskType);
 
         setTasks(filteredTasks);
       } catch (err) {
@@ -214,10 +196,7 @@ export const UserTasksView = ({ taskType }: { taskType: TaskStatus }) => {
         </h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {[...Array(6)].map((_, i) => (
-            <div
-              key={i}
-              className="h-48 bg-gray-200 rounded-xl animate-pulse dark:bg-gray-700"
-            />
+            <div key={i} className="h-48 bg-gray-200 rounded-xl animate-pulse dark:bg-gray-700" />
           ))}
         </div>
       </div>
@@ -227,9 +206,7 @@ export const UserTasksView = ({ taskType }: { taskType: TaskStatus }) => {
   if (error) {
     return (
       <div className="space-y-6">
-        <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
-          Your Tasks
-        </h2>
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Your Tasks</h2>
         <div className="p-6 text-center bg-red-50 rounded-xl dark:bg-red-900/20">
           <p className="text-red-600 dark:text-red-400">Error: {error}</p>
         </div>
@@ -247,8 +224,7 @@ export const UserTasksView = ({ taskType }: { taskType: TaskStatus }) => {
         </h2>
         <div className="p-8 text-center bg-gray-50 rounded-xl dark:bg-gray-800">
           <p className="text-gray-500 dark:text-gray-400">
-            You don't have any{" "}
-            <span className="lowercase">{getStatusTitle(taskType)}</span> tasks
+            You don't have any <span className="lowercase">{getStatusTitle(taskType)}</span> tasks
             yet.
           </p>
         </div>
@@ -300,9 +276,7 @@ export const UserTasksView = ({ taskType }: { taskType: TaskStatus }) => {
                   {/* Price */}
                   <div className="flex items-center gap-2 text-sm">
                     <DollarSignIcon className="w-4 h-4 text-green-600" />
-                    <span className="font-medium text-green-600">
-                      {formatPrice(task.price)}
-                    </span>
+                    <span className="font-medium text-green-600">{formatPrice(task.price)}</span>
                   </div>
 
                   {/* Category */}
@@ -343,19 +317,12 @@ export const UserTasksView = ({ taskType }: { taskType: TaskStatus }) => {
                     <span className="text-gray-600 dark:text-gray-400">
                       {task.creator.id === user?.id
                         ? "You created this task"
-                        : `Created by ${
-                            task.creator.name || task.creator.email
-                          }`}
+                        : `Created by ${task.creator.name || task.creator.email}`}
                     </span>
                   </div>
 
                   {/* Assignment Status - Using state machine for consistent messaging */}
-                  <TaskStatusMessage
-                    task={task}
-                    user={user}
-                    isViber={isViber}
-                    isCoder={isCoder}
-                  />
+                  <TaskStatusMessage task={task} user={user} isViber={isViber} isCoder={isCoder} />
                 </div>
               </div>
             ))}

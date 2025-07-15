@@ -7,7 +7,7 @@ import type { Task, TaskStatus } from "@/lib/db/api/types";
 import { useParams } from "next/navigation";
 import { ClockIcon, DollarSignIcon, TagIcon, UserIcon } from "lucide-react";
 import Badge from "@/components/ui/badge/Badge";
-import { useUser } from "@/lib/hooks/useUser";
+import { useUserContext } from "@/context/UserContext";
 import { useModal } from "@/hooks/useModal";
 import { Modal } from "@/components/ui/modal";
 import Button from "@/components/ui/button/Button";
@@ -31,7 +31,7 @@ type TaskWithRelations = Task & {
 };
 
 export const TaskDetailsPage = () => {
-  const { user } = useUser();
+  const { user } = useUserContext();
   const { isOpen, openModal, closeModal } = useModal();
   const {
     isOpen: isViberModalOpen,
@@ -47,15 +47,11 @@ export const TaskDetailsPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [claimMessage, setClaimMessage] = useState("");
   const [isSubmittingClaim, setIsSubmittingClaim] = useState(false);
-  const [claimValidationError, setClaimValidationError] = useState<
-    string | null
-  >(null);
+  const [claimValidationError, setClaimValidationError] = useState<string | null>(null);
 
   // Zod validation schema for claim message
   const claimMessageSchema = z.object({
-    message: z
-      .string()
-      .min(200, "Your pitch must be at least 200 characters long"),
+    message: z.string().min(200, "Your pitch must be at least 200 characters long"),
   });
 
   // Function to detect and strip contact details
@@ -83,27 +79,12 @@ export const TaskDetailsPage = () => {
     let filteredText = text;
 
     // Replace all detected patterns
-    filteredText = filteredText.replace(
-      emailRegex,
-      "[CONTACT DETAILS REMOVED]"
-    );
-    filteredText = filteredText.replace(
-      phoneRegex,
-      "[CONTACT DETAILS REMOVED]"
-    );
-    filteredText = filteredText.replace(
-      socialMediaRegex,
-      "[CONTACT DETAILS REMOVED]"
-    );
+    filteredText = filteredText.replace(emailRegex, "[CONTACT DETAILS REMOVED]");
+    filteredText = filteredText.replace(phoneRegex, "[CONTACT DETAILS REMOVED]");
+    filteredText = filteredText.replace(socialMediaRegex, "[CONTACT DETAILS REMOVED]");
     filteredText = filteredText.replace(urlRegex, "[CONTACT DETAILS REMOVED]");
-    filteredText = filteredText.replace(
-      messagingHandles,
-      "[CONTACT DETAILS REMOVED]"
-    );
-    filteredText = filteredText.replace(
-      contactPhrases,
-      "[CONTACT DETAILS REMOVED]"
-    );
+    filteredText = filteredText.replace(messagingHandles, "[CONTACT DETAILS REMOVED]");
+    filteredText = filteredText.replace(contactPhrases, "[CONTACT DETAILS REMOVED]");
 
     return filteredText;
   };
@@ -212,9 +193,7 @@ export const TaskDetailsPage = () => {
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6">
-            <h2 className="text-xl font-semibold text-red-800 dark:text-red-200 mb-2">
-              Error
-            </h2>
+            <h2 className="text-xl font-semibold text-red-800 dark:text-red-200 mb-2">Error</h2>
             <p className="text-red-600 dark:text-red-400">{error}</p>
           </div>
         </div>
@@ -263,9 +242,7 @@ export const TaskDetailsPage = () => {
 
           {/* Task Header */}
           <div className="m-6">
-            <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-4">
-              {task.title}
-            </h1>
+            <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-4">{task.title}</h1>
             <p className="text-lg text-gray-600 dark:text-gray-400 leading-relaxed">
               {task.description}
             </p>
@@ -277,12 +254,8 @@ export const TaskDetailsPage = () => {
             <div className="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
               <DollarSignIcon className="w-6 h-6 text-green-600" />
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Budget
-                </p>
-                <p className="text-xl font-bold text-green-600">
-                  {formatPrice(task.price)}
-                </p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Budget</p>
+                <p className="text-xl font-bold text-green-600">{formatPrice(task.price)}</p>
               </div>
             </div>
 
@@ -290,12 +263,8 @@ export const TaskDetailsPage = () => {
             <div className="flex items-center gap-3 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
               <TagIcon className="w-6 h-6 text-blue-600" />
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Category
-                </p>
-                <p className="text-xl font-bold text-blue-600 capitalize">
-                  {task.category}
-                </p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Category</p>
+                <p className="text-xl font-bold text-blue-600 capitalize">{task.category}</p>
               </div>
             </div>
 
@@ -303,12 +272,8 @@ export const TaskDetailsPage = () => {
             <div className="flex items-center gap-3 p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
               <div className="w-6 h-6 rounded-full bg-purple-600"></div>
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Status
-                </p>
-                <p className="text-xl font-bold text-purple-600 capitalize">
-                  {task.status}
-                </p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Status</p>
+                <p className="text-xl font-bold text-purple-600 capitalize">{task.status}</p>
               </div>
             </div>
 
@@ -316,9 +281,7 @@ export const TaskDetailsPage = () => {
             <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
               <ClockIcon className="w-6 h-6 text-gray-600" />
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Posted
-                </p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Posted</p>
                 <p className="text-xl font-bold text-gray-800 dark:text-white">
                   {formatDate(task.created_at)}
                 </p>
@@ -368,12 +331,11 @@ export const TaskDetailsPage = () => {
               Claim Task
             </h4>
             <p className="mb-6 text-sm text-gray-500 dark:text-gray-400 lg:mb-7">
-              Submit your claim for this task. Include a message explaining why
-              you're the best fit. Mention your experience and approach.
+              Submit your claim for this task. Include a message explaining why you're the best fit.
+              Mention your experience and approach.
             </p>
             <p>
-              We will send your Bio along with this, so make sure you have got
-              something in there.
+              We will send your Bio along with this, so make sure you have got something in there.
             </p>
           </div>
 
@@ -398,10 +360,9 @@ export const TaskDetailsPage = () => {
                 </p>
               )}
               <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                Note: Contact details (emails, phone numbers, social media
-                handles, URLs) will be automatically removed. We use Stripe.com
-                to hold the money in escrow until the task is completed and we
-                can not deal with any disputes for work done outside of the
+                Note: Contact details (emails, phone numbers, social media handles, URLs) will be
+                automatically removed. We use Stripe.com to hold the money in escrow until the task
+                is completed and we can not deal with any disputes for work done outside of the
                 platform.
               </p>
               <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
@@ -436,11 +397,7 @@ export const TaskDetailsPage = () => {
       </Modal>
 
       {/* Contact Viber Modal */}
-      <Modal
-        isOpen={isViberModalOpen}
-        onClose={closeViberModal}
-        className="max-w-[500px] m-4"
-      >
+      <Modal isOpen={isViberModalOpen} onClose={closeViberModal} className="max-w-[500px] m-4">
         <div className="no-scrollbar relative w-full max-w-[500px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
           <div className="px-2 pr-14">
             <h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
