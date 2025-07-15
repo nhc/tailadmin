@@ -2,12 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useUserContext } from "@/context/UserContext";
-import { supabase } from "@/lib/supabase/client-db-conn";
-import { tasksApi } from "@/lib/db/api";
 import type { Task, TaskStatus, User } from "@/lib/db/api/types";
 import Badge from "@/components/ui/badge/Badge";
 import { ClockIcon, DollarSignIcon, UserIcon, TagIcon, InfoIcon } from "lucide-react";
 import { useTaskStateMachine } from "@/lib/hooks/useTaskStateMachine";
+import { getTasksByCreator } from "@/lib/actions/tasks";
 
 // Task Status Message Component
 const TaskStatusMessage = ({
@@ -56,47 +55,19 @@ type TaskGroup = {
   tasks: TaskWithRelations[];
 };
 
-export const UserTasksView = ({ user, taskType }: { user: User; taskType: TaskStatus }) => {
+export const UserTasksView = ({
+  user,
+  taskType,
+  initialTasks,
+}: {
+  user: User;
+  taskType: TaskStatus;
+  initialTasks?: TaskWithRelations[] | null;
+}) => {
   const { isViber, isCoder } = useUserContext();
-  const [tasks, setTasks] = useState<TaskWithRelations[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [tasks, setTasks] = useState<TaskWithRelations[]>(initialTasks || []);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchUserTasks = async () => {
-      console.log("fetchUserTasks", user);
-      if (!user) return;
-
-      try {
-        setLoading(true);
-        // const supabase = createClient();
-
-        // Fetch tasks created by the user
-        const { data: createdTasks } = await tasksApi.getByCreator(supabase, user.id);
-
-        // Fetch tasks assigned to the user
-        const { data: assignedTasks } = await tasksApi.getByAssignee(supabase, user.id);
-
-        // Combine and deduplicate tasks
-        const allTasks = [...(createdTasks || []), ...(assignedTasks || [])];
-        const uniqueTasks = allTasks.filter(
-          (task, index, self) => index === self.findIndex((t) => t.id === task.id)
-        );
-
-        console.log("uniqueTasks", uniqueTasks);
-        // Filter tasks by the specified taskType
-        const filteredTasks = uniqueTasks.filter((task) => task.status === taskType);
-
-        setTasks(filteredTasks);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to fetch tasks");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUserTasks();
-  }, [user]);
 
   const getStatusColor = (status: string) => {
     switch (status) {

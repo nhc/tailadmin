@@ -2,23 +2,15 @@ export type UserRole = "viber" | "coder" | "admin" | "superuser";
 export type TaskStatus =
   | "open"
   | "claimed"
+  | "progress"
   | "delivered"
   | "completed"
   | "disputed"
   | "cancelled";
 export type ClaimStatus = "pending" | "approved" | "rejected";
-export type PaymentStatus =
-  | "pending"
-  | "held"
-  | "released"
-  | "refunded"
-  | "disputed";
+export type PaymentStatus = "pending" | "held" | "released" | "refunded" | "disputed";
 export type FileType = "image" | "video" | "code" | "other";
-export type NotificationType =
-  | "task_claimed"
-  | "task_completed"
-  | "payment_released"
-  | "general";
+export type NotificationType = "task_claimed" | "task_completed" | "payment_released" | "general";
 export type AuditAction =
   | "task_created"
   | "task_claimed"
@@ -139,14 +131,8 @@ export type Notification = {
 // Insert types (for creating new records)
 export type InsertUser = Omit<User, "id" | "created_at" | "updated_at">;
 export type InsertTask = Omit<Task, "id" | "created_at" | "updated_at">;
-export type InsertTaskSecondaryAssignee = Omit<
-  TaskSecondaryAssignee,
-  "id" | "created_at"
->;
-export type InsertClaim = Omit<
-  Claim,
-  "id" | "created_at" | "approved_at" | "rejected_at"
->;
+export type InsertTaskSecondaryAssignee = Omit<TaskSecondaryAssignee, "id" | "created_at">;
+export type InsertClaim = Omit<Claim, "id" | "created_at" | "approved_at" | "rejected_at">;
 export type InsertPayment = Omit<
   Payment,
   "id" | "created_at" | "updated_at" | "refunded_at" | "disputed_at"
@@ -154,23 +140,12 @@ export type InsertPayment = Omit<
 export type InsertAttachment = Omit<Attachment, "id" | "created_at">;
 export type InsertAuditTrail = Omit<AuditTrail, "id" | "created_at">;
 export type InsertReview = Omit<Review, "id" | "created_at">;
-export type InsertNotification = Omit<
-  Notification,
-  "id" | "created_at" | "sent_at"
->;
+export type InsertNotification = Omit<Notification, "id" | "created_at" | "sent_at">;
 
 // Update types (for updating existing records)
-export type UpdateUser = Partial<
-  Omit<User, "id" | "created_at" | "updated_at">
->;
-export type UpdateTask = Partial<
-  Omit<Task, "id" | "created_at" | "updated_at">
->;
+export type UpdateUser = Partial<Omit<User, "id" | "created_at" | "updated_at">>;
+export type UpdateTask = Partial<Omit<Task, "id" | "created_at" | "updated_at">>;
 export type UpdateClaim = Partial<Omit<Claim, "id" | "created_at">>;
-export type UpdatePayment = Partial<
-  Omit<Payment, "id" | "created_at" | "updated_at">
->;
+export type UpdatePayment = Partial<Omit<Payment, "id" | "created_at" | "updated_at">>;
 export type UpdateReview = Partial<Omit<Review, "id" | "created_at">>;
-export type UpdateNotification = Partial<
-  Omit<Notification, "id" | "created_at">
->;
+export type UpdateNotification = Partial<Omit<Notification, "id" | "created_at">>;

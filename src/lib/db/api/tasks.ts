@@ -1,4 +1,3 @@
-import { createClient } from "@/lib/supabase/server";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Task, InsertTask, UpdateTask, TaskStatus } from "./types";
 
@@ -127,6 +126,54 @@ export const tasksApi = {
         { count: "exact" }
       )
       .eq("creator_id", creatorId)
+      .range(from, to)
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+    const output = {
+      data: data as (Task & {
+        creator: {
+          id: string;
+          name: string | null;
+          email: string;
+          avatar_url: string | null;
+        };
+        primary_assignee: {
+          id: string;
+          name: string | null;
+          email: string;
+          avatar_url: string | null;
+        } | null;
+      })[],
+      count,
+    };
+    // console.log("getByCreator output", output);
+    return output;
+  },
+
+  // Get tasks by creator and status
+  getByCreatorAndStatus: async (
+    supabase: SupabaseClient,
+    creatorId: string,
+    status: TaskStatus,
+    page = 1,
+    limit = 50
+  ) => {
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
+
+    const { data, error, count } = await supabase
+      .from("tasks")
+      .select(
+        `
+        *,
+        creator:users!tasks_creator_id_fkey(id, name, email, avatar_url),
+        primary_assignee:users!tasks_primary_assignee_id_fkey(id, name, email, avatar_url)
+      `,
+        { count: "exact" }
+      )
+      .eq("creator_id", creatorId)
+      .eq("status", status)
       .range(from, to)
       .order("created_at", { ascending: false });
 

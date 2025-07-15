@@ -4,11 +4,7 @@ import type { User, InsertUser, UpdateUser, UserRole } from "./types";
 export const usersApi = {
   // Get user by ID
   getById: async (supabase: SupabaseClient, id: string) => {
-    const { data, error } = await supabase
-      .from("users")
-      .select("*")
-      .eq("id", id)
-      .single();
+    const { data, error } = await supabase.from("users").select("*").eq("id", id).single();
 
     if (error) throw error;
     return data as User;
@@ -16,11 +12,7 @@ export const usersApi = {
 
   // Get user by email
   getByEmail: async (supabase: SupabaseClient, email: string) => {
-    const { data, error } = await supabase
-      .from("users")
-      .select("*")
-      .eq("email", email)
-      .single();
+    const { data, error } = await supabase.from("users").select("*").eq("email", email).single();
 
     if (error) throw error;
     return data as User;
@@ -55,11 +47,7 @@ export const usersApi = {
 
   // Create new user
   create: async (supabase: SupabaseClient, user: InsertUser) => {
-    const { data, error } = await supabase
-      .from("users")
-      .insert(user)
-      .select()
-      .single();
+    const { data, error } = await supabase.from("users").insert(user).select().single();
 
     if (error) throw error;
     return data as User;
@@ -100,11 +88,7 @@ export const usersApi = {
   },
 
   // Update Stripe account ID
-  updateStripeAccount: async (
-    supabase: SupabaseClient,
-    id: string,
-    stripeAccountId: string
-  ) => {
+  updateStripeAccount: async (supabase: SupabaseClient, id: string, stripeAccountId: string) => {
     const { data, error } = await supabase
       .from("users")
       .update({ stripe_account_id: stripeAccountId })

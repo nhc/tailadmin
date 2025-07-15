@@ -42,7 +42,8 @@ const navItems: NavItem[] = [
     isMenuOpen: true,
     subItems: [
       { name: "Open", path: "/dashboard/tasks/open", pro: false },
-      { name: "In Progress", path: "/dashboard/tasks/progress", pro: false },
+      { name: "Claimed", path: "/dashboard/tasks/claimed", pro: false },
+      { name: "In Progress", path: "/dashboard/tasks/inprogress", pro: false },
       { name: "Completed", path: "/dashboard/tasks/completed", pro: false },
       { name: "Disputed", path: "/dashboard/tasks/disputed", pro: false },
       { name: "Cancelled", path: "/dashboard/tasks/cancelled", pro: false },
@@ -66,7 +67,7 @@ const navItems: NavItem[] = [
         path: "/dashboard/tasks/open",
         pro: false,
       },
-      { name: "In progress", path: "/dashboard/tasks/progress", pro: false },
+      { name: "In progress", path: "/dashboard/tasks/inprogress", pro: false },
       { name: "Completed", path: "/dashboard/tasks/completed", pro: false },
       { name: "Disputed", path: "/dashboard/tasks/disputed", pro: false },
       { name: "Cancelled", path: "/dashboard/tasks/cancelled", pro: false },
