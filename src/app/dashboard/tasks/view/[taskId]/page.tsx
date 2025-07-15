@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { tasksApi, claimsApi } from "@/lib/db/api";
+import { tasksApi } from "@/lib/db/api";
+import { claimTask } from "@/lib/actions/tasks";
 import type { Task, TaskStatus } from "@/lib/db/api/types";
 import { useParams } from "next/navigation";
 import { ClockIcon, DollarSignIcon, TagIcon, UserIcon } from "lucide-react";
@@ -106,25 +107,25 @@ export const TaskDetailsPage = () => {
     setIsSubmittingClaim(true);
 
     try {
-      const supabase = createClient();
-
       // Strip contact details from the message
       const sanitizedMessage = stripContactDetails(claimMessage);
 
-      await claimsApi.create(supabase, {
-        task_id: task.id,
-        coder_id: user.id,
-        message: sanitizedMessage || null,
-        status: "pending",
-      });
+      // Use the new task movement functionality with claim message
+      const updatedTask = await claimTask(task.id, sanitizedMessage);
+
+      // Update the local task state
+      setTask((prev) => (prev ? { ...prev, ...updatedTask } : null));
 
       closeModal();
       setClaimMessage("");
       setClaimValidationError(null);
-      // TODO: Show success message or redirect
+
+      // Show success message
+      alert("Task claimed successfully!");
     } catch (err) {
       console.error("Failed to claim task:", err);
-      // TODO: Show error message
+      const errorMessage = err instanceof Error ? err.message : "Failed to claim task";
+      alert(`Error: ${errorMessage}`);
     } finally {
       setIsSubmittingClaim(false);
     }
@@ -306,20 +307,22 @@ export const TaskDetailsPage = () => {
           )}
 
           {/* Action Buttons */}
-          <div className="mt-8 flex gap-4">
-            <button
-              onClick={openModal}
-              className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors duration-200"
-            >
-              Claim Task
-            </button>
-            <button
-              onClick={openViberModal}
-              className="px-6 py-3 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-semibold rounded-lg transition-colors duration-200"
-            >
-              Contact Viber
-            </button>
-          </div>
+          {task.status === "open" && (
+            <div className="mt-8 flex gap-4">
+              <button
+                onClick={openModal}
+                className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors duration-200"
+              >
+                Claim Task
+              </button>
+              <button
+                onClick={openViberModal}
+                className="px-6 py-3 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-semibold rounded-lg transition-colors duration-200"
+              >
+                Contact Viber
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -330,11 +333,11 @@ export const TaskDetailsPage = () => {
             <h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
               Claim Task
             </h4>
-            <p className="mb-6 text-sm text-gray-500 dark:text-gray-400 lg:mb-7">
+            <p className="mb-6 text-sm">
               Submit your claim for this task. Include a message explaining why you're the best fit.
               Mention your experience and approach.
             </p>
-            <p>
+            <p className="text-sm mb-2 lg:mb-8">
               We will send your Bio along with this, so make sure you have got something in there.
             </p>
           </div>

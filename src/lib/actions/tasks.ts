@@ -2,7 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { tasksApi } from "@/lib/db/api/tasks";
-import type { InsertTask, UpdateTask, TaskStatus } from "@/lib/db/api/types";
+import type { InsertTask, UpdateTask, TaskStatus, Task } from "@/lib/db/api/types";
 
 export const getTasksByCreator = async (creatorId: string) => {
   if (!creatorId) {
@@ -25,7 +25,59 @@ export const getByCreatorAndStatus = async (creatorId: string, status: TaskStatu
 
   try {
     const supabase = await createClient();
-    return await tasksApi.getByCreatorAndStatus(supabase, creatorId, status);
+
+    // Get tasks with claims data included
+    const { data, error, count } = await supabase
+      .from("tasks")
+      .select(
+        `
+        *,
+        creator:users!tasks_creator_id_fkey(id, name, email, avatar_url),
+        primary_assignee:users!tasks_primary_assignee_id_fkey(id, name, email, avatar_url),
+        claims(
+          id,
+          message,
+          status,
+          created_at,
+          coder:users!claims_coder_id_fkey(id, name, email, avatar_url)
+        )
+      `
+      )
+      .eq("creator_id", creatorId)
+      .eq("status", status)
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+
+    return {
+      data: data as (Task & {
+        creator: {
+          id: string;
+          name: string | null;
+          email: string;
+          avatar_url: string | null;
+        };
+        primary_assignee: {
+          id: string;
+          name: string | null;
+          email: string;
+          avatar_url: string | null;
+        } | null;
+        claims: {
+          id: string;
+          message: string | null;
+          status: string;
+          created_at: string;
+          coder: {
+            id: string;
+            name: string | null;
+            email: string;
+            avatar_url: string | null;
+          };
+        }[];
+      })[],
+      count,
+    };
   } catch (error) {
     console.error("Failed to get tasks by creator and status:", error);
     throw new Error("Failed to get tasks by creator and status");
@@ -183,5 +235,329 @@ export const getTaskSummary = async (userId: string) => {
   } catch (error) {
     console.error("Failed to get task summary:", error);
     throw new Error("Failed to get task summary");
+  }
+};
+
+// Task transition actions
+export const transitionTask = async (
+  taskId: string,
+  action: string,
+  metadata?: Record<string, unknown>
+) => {
+  try {
+    const supabase = await createClient();
+
+    // Get the current session
+    const {
+      data: { session },
+      error: authError,
+    } = await supabase.auth.getSession();
+
+    if (authError || !session?.user) {
+      throw new Error("Not authenticated");
+    }
+
+    // Get current task
+    const taskResult = await tasksApi.getById(supabase, taskId);
+    if (!taskResult) {
+      throw new Error("Task not found");
+    }
+
+    const task = taskResult;
+    const currentStatus = task.status as TaskStatus;
+
+    // Get user info
+    const userResult = await supabase
+      .from("users")
+      .select("role")
+      .eq("id", session.user.id)
+      .single();
+
+    if (!userResult.data) {
+      throw new Error("User not found");
+    }
+
+    const userRole = userResult.data.role;
+    const isAssignee = task.primary_assignee_id === session.user.id;
+
+    // Import state machine functions
+    const { getValidTransitions } = await import("@/lib/state-machines/task-state-machine");
+
+    // Get valid transitions for current state and user role
+    const validTransitions = getValidTransitions(currentStatus, userRole);
+    const transition = validTransitions.find((t) => t.action === action);
+
+    if (!transition) {
+      throw new Error(`Invalid transition: ${action} from ${currentStatus} for role ${userRole}`);
+    }
+
+    // Handle special case for claim action - also update assignee
+    let updatedTask;
+    if (action === "claim") {
+      // For claim action, also assign the task to the user
+      updatedTask = await tasksApi.assign(supabase, taskId, session.user.id);
+    } else {
+      // For other actions, just update status
+      updatedTask = await tasksApi.updateStatus(supabase, taskId, transition.to);
+    }
+
+    // Create audit log entry
+    const { auditTrailApi } = await import("@/lib/db/api");
+    await auditTrailApi.logAction(
+      supabase,
+      `task_${transition.to}` as any,
+      "task",
+      taskId,
+      session.user.id,
+      {
+        action,
+        fromStatus: currentStatus,
+        toStatus: transition.to,
+        description: transition.description,
+        ...metadata,
+      }
+    );
+
+    return updatedTask;
+  } catch (error) {
+    console.error("Failed to transition task:", error);
+    throw new Error("Failed to transition task");
+  }
+};
+
+// Specific transition actions for better UX
+export const claimTask = async (taskId: string, claimMessage?: string) => {
+  try {
+    const supabase = await createClient();
+
+    // Get the current session
+    const {
+      data: { session },
+      error: authError,
+    } = await supabase.auth.getSession();
+
+    if (authError || !session?.user) {
+      throw new Error("Not authenticated");
+    }
+
+    // Check if user has already claimed this task
+    const { claimsApi } = await import("@/lib/db/api");
+    const existingClaim = await claimsApi.hasUserClaimed(supabase, taskId, session.user.id);
+
+    if (existingClaim) {
+      throw new Error("You have already claimed this task");
+    }
+
+    // Create the claim record first
+    const claim = await claimsApi.create(supabase, {
+      task_id: taskId,
+      coder_id: session.user.id,
+      message: claimMessage || null,
+      status: "pending",
+    });
+
+    // Then transition the task status
+    const updatedTask = await transitionTask(taskId, "claim", {
+      claimMessage,
+      claimId: claim.id,
+    });
+
+    return updatedTask;
+  } catch (error) {
+    console.error("Failed to claim task:", error);
+    throw error;
+  }
+};
+
+export const startWorkOnTask = async (taskId: string) => {
+  return transitionTask(taskId, "start_work");
+};
+
+export const deliverTask = async (taskId: string, deliveryNotes?: string) => {
+  return transitionTask(taskId, "deliver", { deliveryNotes });
+};
+
+export const completeTask = async (taskId: string) => {
+  return transitionTask(taskId, "complete");
+};
+
+export const disputeTask = async (taskId: string, disputeReason?: string) => {
+  return transitionTask(taskId, "dispute", { disputeReason });
+};
+
+export const cancelTask = async (taskId: string, cancelReason?: string) => {
+  return transitionTask(taskId, "cancel", { cancelReason });
+};
+
+export const resolveDisputeForCoder = async (taskId: string) => {
+  return transitionTask(taskId, "resolve_for_coder");
+};
+
+export const resolveDisputeForViber = async (taskId: string) => {
+  return transitionTask(taskId, "resolve_for_viber");
+};
+
+// Get claimed tasks for a coder by status
+export const getClaimedTasksByStatus = async (coderId: string, status: TaskStatus) => {
+  try {
+    const supabase = await createClient();
+
+    // Get tasks that are claimed by the coder with the specified status
+    const { data, error, count } = await supabase
+      .from("tasks")
+      .select(
+        `
+        *,
+        creator:users!tasks_creator_id_fkey(id, name, email, avatar_url),
+        primary_assignee:users!tasks_primary_assignee_id_fkey(id, name, email, avatar_url),
+        claims(
+          id,
+          message,
+          status,
+          created_at,
+          coder:users!claims_coder_id_fkey(id, name, email, avatar_url)
+        )
+      `
+      )
+      .eq("status", status)
+      .eq("primary_assignee_id", coderId)
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+
+    return {
+      data: data as (Task & {
+        creator: {
+          id: string;
+          name: string | null;
+          email: string;
+          avatar_url: string | null;
+        };
+        primary_assignee: {
+          id: string;
+          name: string | null;
+          email: string;
+          avatar_url: string | null;
+        } | null;
+        claims: {
+          id: string;
+          message: string | null;
+          status: string;
+          created_at: string;
+          coder: {
+            id: string;
+            name: string | null;
+            email: string;
+            avatar_url: string | null;
+          };
+        }[];
+      })[],
+      count,
+    };
+  } catch (error) {
+    console.error("Failed to get claimed tasks by status:", error);
+    throw new Error("Failed to get claimed tasks by status");
+  }
+};
+
+// Approve a claim
+export const approveClaim = async (claimId: string) => {
+  try {
+    const supabase = await createClient();
+
+    // Get the current session
+    const {
+      data: { session },
+      error: authError,
+    } = await supabase.auth.getSession();
+
+    if (authError || !session?.user) {
+      throw new Error("Not authenticated");
+    }
+
+    // Get user info to check if they're a viber
+    const userResult = await supabase
+      .from("users")
+      .select("role")
+      .eq("id", session.user.id)
+      .single();
+
+    if (!userResult.data || userResult.data.role !== "viber") {
+      throw new Error("Only viber users can approve claims");
+    }
+
+    // Approve the claim
+    const { claimsApi } = await import("@/lib/db/api");
+    const approvedClaim = await claimsApi.approve(supabase, claimId);
+
+    // Create audit log entry
+    const { auditTrailApi } = await import("@/lib/db/api");
+    await auditTrailApi.create(supabase, {
+      user_id: session.user.id,
+      action_type: "claim_approved",
+      entity_type: "claim",
+      entity_id: claimId,
+      metadata: {
+        claimId,
+        approvedBy: session.user.id,
+        approvedAt: new Date().toISOString(),
+      },
+    });
+
+    return approvedClaim;
+  } catch (error) {
+    console.error("Failed to approve claim:", error);
+    throw error;
+  }
+};
+
+// Reject a claim
+export const rejectClaim = async (claimId: string) => {
+  try {
+    const supabase = await createClient();
+
+    // Get the current session
+    const {
+      data: { session },
+      error: authError,
+    } = await supabase.auth.getSession();
+
+    if (authError || !session?.user) {
+      throw new Error("Not authenticated");
+    }
+
+    // Get user info to check if they're a viber
+    const userResult = await supabase
+      .from("users")
+      .select("role")
+      .eq("id", session.user.id)
+      .single();
+
+    if (!userResult.data || userResult.data.role !== "viber") {
+      throw new Error("Only viber users can reject claims");
+    }
+
+    // Reject the claim
+    const { claimsApi } = await import("@/lib/db/api");
+    const rejectedClaim = await claimsApi.reject(supabase, claimId);
+
+    // Create audit log entry
+    const { auditTrailApi } = await import("@/lib/db/api");
+    await auditTrailApi.create(supabase, {
+      user_id: session.user.id,
+      action_type: "claim_rejected",
+      entity_type: "claim",
+      entity_id: claimId,
+      metadata: {
+        claimId,
+        rejectedBy: session.user.id,
+        rejectedAt: new Date().toISOString(),
+      },
+    });
+
+    return rejectedClaim;
+  } catch (error) {
+    console.error("Failed to reject claim:", error);
+    throw error;
   }
 };

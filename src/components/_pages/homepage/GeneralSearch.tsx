@@ -6,13 +6,7 @@ import { tasksApi } from "@/lib/db/api";
 import type { Task, TaskStatus } from "@/lib/db/api/types";
 import { commonTechStack, commonBudgets } from "@/config/select-lists";
 import Badge from "@/components/ui/badge/Badge";
-import {
-  SearchIcon,
-  DollarSignIcon,
-  TagIcon,
-  ClockIcon,
-  UserIcon,
-} from "lucide-react";
+import { SearchIcon, DollarSignIcon, TagIcon, ClockIcon, UserIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 type TaskWithRelations = Task & {
@@ -102,9 +96,7 @@ export default function GeneralSearch({
         filteredTasks = filteredTasks.filter(
           (task) =>
             task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            task.description
-              .toLowerCase()
-              .includes(searchQuery.toLowerCase()) ||
+            task.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
             task.category.toLowerCase().includes(searchQuery.toLowerCase())
         );
       }
@@ -146,9 +138,7 @@ export default function GeneralSearch({
 
       setTasks(sortedTasks);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to fetch popular tasks"
-      );
+      setError(err instanceof Error ? err.message : "Failed to fetch popular tasks");
     } finally {
       setLoading(false);
     }
@@ -279,10 +269,7 @@ export default function GeneralSearch({
         {loading && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[...Array(6)].map((_, i) => (
-              <div
-                key={i}
-                className="h-64 bg-gray-200 dark:bg-gray-700 rounded-xl animate-pulse"
-              />
+              <div key={i} className="h-64 bg-gray-200 dark:bg-gray-700 rounded-xl animate-pulse" />
             ))}
           </div>
         )}
@@ -368,7 +355,7 @@ export default function GeneralSearch({
                       <button
                         className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200"
                         onClick={() => {
-                          router.push("/dashboard/tasks/" + task.id);
+                          router.push("/dashboard/tasks/view/" + task.id);
                         }}
                       >
                         View Details

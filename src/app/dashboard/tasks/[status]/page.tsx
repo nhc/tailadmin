@@ -2,7 +2,7 @@ import UserTasksView from "@/components/_pages/dashboard/UserTasksView";
 import { useServerUser } from "@/lib/hooks/useServerUser";
 import { TaskStatus } from "@/lib/db/api/types";
 import { headers } from "next/headers";
-import { getByCreatorAndStatus } from "@/lib/actions/tasks";
+import { getByCreatorAndStatus, getClaimedTasksByStatus } from "@/lib/actions/tasks";
 
 export default async function OpenTasksPage() {
   const { userData: user, error } = await useServerUser();
@@ -19,8 +19,16 @@ export default async function OpenTasksPage() {
   // Fetch tasks on the server side
   let tasks = null;
   try {
-    const result = await getByCreatorAndStatus(user.id, status as TaskStatus);
-    tasks = result?.data || null;
+    // viber will have created the task
+    if (user?.role === "viber") {
+      const result = await getByCreatorAndStatus(user.id, status as TaskStatus);
+      tasks = result?.data || null;
+    } else {
+      // coder will only see tasks assigned to them
+      const result = await getClaimedTasksByStatus(user.id, status as TaskStatus);
+
+      tasks = result?.data || null;
+    }
   } catch (taskError) {
     console.error("Failed to fetch tasks:", taskError);
   }

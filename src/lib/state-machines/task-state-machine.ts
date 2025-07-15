@@ -1,4 +1,4 @@
-import type { TaskStatus, UserRole } from "@/lib/db/api/types";
+import type { TaskStatus, UserRole, ClaimStatus } from "@/lib/db/api/types";
 
 export type TaskState = TaskStatus;
 
@@ -287,7 +287,11 @@ export class TaskStateMachine {
   }
 
   // Get user-friendly messages based on state and role
-  getStatusMessage(userRole: UserRole, isAssignee: boolean = false): string {
+  getStatusMessage(
+    userRole: UserRole,
+    isAssignee: boolean = false,
+    claimStatus?: ClaimStatus
+  ): string {
     const stateConfig = TASK_STATES[this.currentState];
 
     switch (this.currentState) {
@@ -296,7 +300,14 @@ export class TaskStateMachine {
 
       case "claimed":
         if (isAssignee) {
-          return "You are working on this task";
+          if (claimStatus === "pending") {
+            return "Waiting for viber to approve your claim";
+          } else if (claimStatus === "approved") {
+            return "Your claim was approved! You can start working";
+          } else if (claimStatus === "rejected") {
+            return "Your claim was rejected";
+          }
+          return "You claimed this task";
         }
         return userRole === "viber" ? "Task claimed by a coder" : "Task is in progress";
 
@@ -329,7 +340,11 @@ export class TaskStateMachine {
   }
 
   // Get action buttons that should be shown
-  getAvailableActions(userRole: UserRole, isAssignee: boolean = false): string[] {
+  getAvailableActions(
+    userRole: UserRole,
+    isAssignee: boolean = false,
+    claimStatus?: ClaimStatus
+  ): string[] {
     const actions: string[] = [];
 
     // Admin users can perform all actions
@@ -371,8 +386,13 @@ export class TaskStateMachine {
       actions.push("claim");
     }
 
-    // Add start_work action for claimed tasks
-    if (this.currentState === "claimed" && userRole === "coder" && isAssignee) {
+    // Add start_work action for claimed tasks - only if claim is approved
+    if (
+      this.currentState === "claimed" &&
+      userRole === "coder" &&
+      isAssignee &&
+      claimStatus === "approved"
+    ) {
       actions.push("start_work");
     }
 
@@ -381,8 +401,13 @@ export class TaskStateMachine {
       actions.push("pause_work");
     }
 
-    if (this.canBeDelivered() && userRole === "coder" && isAssignee) {
-      actions.push("deliver");
+    // Add deliver action - only for inprogress tasks or approved claimed tasks
+    if (userRole === "coder" && isAssignee) {
+      if (this.currentState === "inprogress") {
+        actions.push("deliver");
+      } else if (this.currentState === "claimed" && claimStatus === "approved") {
+        actions.push("deliver");
+      }
     }
 
     if (this.canBeCompleted() && userRole === "viber") {
@@ -399,6 +424,12 @@ export class TaskStateMachine {
       } else if (userRole === "coder" && isAssignee) {
         actions.push("cancel");
       }
+    }
+
+    // Add claim approval actions for viber users when there are pending claims
+    if (this.currentState === "claimed" && userRole === "viber" && claimStatus === "pending") {
+      actions.push("approve_claim");
+      actions.push("reject_claim");
     }
 
     return actions;

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useUserContext } from "@/context/UserContext";
-import type { Task, TaskStatus, User } from "@/lib/db/api/types";
+import type { Task, TaskStatus, User, TaskWithRelations, TaskGroup } from "@/lib/db/api/types";
 import Badge from "@/components/ui/badge/Badge";
 import { ClockIcon, DollarSignIcon, UserIcon, TagIcon, InfoIcon } from "lucide-react";
 import { useTaskStateMachine } from "@/lib/hooks/useTaskStateMachine";
@@ -15,50 +15,60 @@ const TaskStatusMessage = ({
   user,
   isViber,
   isCoder,
+  onTaskUpdated,
 }: {
   task: TaskWithRelations;
   user: any;
   isViber: boolean;
   isCoder: boolean;
+  onTaskUpdated?: (updatedTask: Task) => void;
 }) => {
   const isAssignee = task.primary_assignee?.id === user?.id && task.creator.id !== user?.id;
 
   const userRole = isViber ? "viber" : "coder";
 
-  const { statusMessage } = useTaskStateMachine(task.status as TaskStatus, userRole, isAssignee);
+  // Find the relevant claim for this task
+  let userClaim;
+  let claimStatus;
 
-  console.log("statusMessage", statusMessage, task.status, userRole, isAssignee);
+  if (isViber) {
+    // For Viber users, find any pending claim on their task
+    userClaim = task.claims?.find((claim) => claim.status === "pending");
+    claimStatus = userClaim?.status;
+  } else {
+    // For Coder users, find their own claim
+    userClaim = task.claims?.find((claim) => claim.coder.id === user?.id);
+    claimStatus = userClaim?.status;
+  }
+
+  const { statusMessage } = useTaskStateMachine(
+    task.status as TaskStatus,
+    userRole,
+    isAssignee,
+    claimStatus
+  );
+
+  const handleAction = (action: string, taskId: string) => {
+    console.log(`Action ${action} performed on task ${taskId}`);
+  };
+
   return (
     <>
-      <div className="flex items-center gap-2 text-sm">
+      <div className="flex items-center gap-2 text-sm font-semibold bg-gray-100 dark:bg-gray-800 p-4 rounded-md">
         <UserIcon className="w-4 h-4 text-gray-500" />
         <span className="text-gray-600 dark:text-gray-400">{statusMessage}</span>
       </div>
-      <TaskActions task={task} user={user} onAction={() => {}} />
+      <div></div>
+      <div className="flex flex-row items-center justify-center gap-2">
+        <TaskActions
+          task={task}
+          user={user}
+          onAction={handleAction}
+          onTaskUpdated={onTaskUpdated}
+        />
+      </div>
     </>
   );
-};
-
-type TaskWithRelations = Task & {
-  creator: {
-    id: string;
-    name: string | null;
-    email: string;
-    avatar_url: string | null;
-  };
-  primary_assignee: {
-    id: string;
-    name: string | null;
-    email: string;
-    avatar_url: string | null;
-  } | null;
-};
-
-type TaskGroup = {
-  status: string;
-  title: string;
-  color: string;
-  tasks: TaskWithRelations[];
 };
 
 export const UserTasksView = ({
@@ -74,6 +84,12 @@ export const UserTasksView = ({
   const [tasks, setTasks] = useState<TaskWithRelations[]>(initialTasks || []);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const handleTaskUpdated = (updatedTask: Task) => {
+    setTasks((prevTasks) =>
+      prevTasks.map((task) => (task.id === updatedTask.id ? { ...task, ...updatedTask } : task))
+    );
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -113,22 +129,33 @@ export const UserTasksView = ({
     }
   };
 
-  const getStatusDescription = (status: string) => {
-    switch (status) {
-      case "open":
-        return "Tasks that are open and have not yet been claimed by a coder";
-      case "claimed":
-        return "Tasks that have been claimed by a coder";
-      case "delivered":
-        return "Tasks that have been delivered by a coder";
-      case "completed":
-        return "Tasks that have been completed by a coder";
-      case "disputed":
-        return "Tasks that have been disputed by a coder";
-      case "cancelled":
-        return "Tasks that have been cancelled by a coder";
-      default:
-        return "Status not known";
+  const getStatusDescription = (status: string, userRole: string) => {
+    if (userRole === "viber") {
+      switch (status) {
+        case "open":
+          return "Tasks that are open and have not yet been claimed by a coder";
+        case "claimed":
+          return "Tasks that have been claimed by a coder";
+        case "delivered":
+          return "Tasks that have been delivered by a coder";
+        case "completed":
+          return "Tasks that have been completed by a coder";
+        case "disputed":
+          return "Tasks that have been disputed by a coder";
+        case "cancelled":
+          return "Tasks that have been cancelled by a coder";
+        default:
+          return "Status not known";
+      }
+    }
+
+    if (userRole === "coder") {
+      switch (status) {
+        case "claimed":
+          return "Tasks that have been claimed by you, but you have not started";
+        default:
+          return "Status not known";
+      }
     }
   };
 
@@ -218,7 +245,7 @@ export const UserTasksView = ({
         <div className="flex items-center gap-2">
           <InfoIcon size={20} className="" />
           <span className="text-sm text-gray-500 dark:text-gray-400">
-            {getStatusDescription(taskType)}
+            {getStatusDescription(taskType, user.role)}
           </span>
         </div>
       </div>
@@ -232,7 +259,7 @@ export const UserTasksView = ({
             </span>
           </div>
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
             {group.tasks.map((task) => (
               <div
                 key={task.id}
@@ -299,7 +326,13 @@ export const UserTasksView = ({
                   </div>
 
                   {/* Assignment Status - Using state machine for consistent messaging */}
-                  <TaskStatusMessage task={task} user={user} isViber={isViber} isCoder={isCoder} />
+                  <TaskStatusMessage
+                    task={task}
+                    user={user}
+                    isViber={isViber}
+                    isCoder={isCoder}
+                    onTaskUpdated={handleTaskUpdated}
+                  />
                 </div>
               </div>
             ))}

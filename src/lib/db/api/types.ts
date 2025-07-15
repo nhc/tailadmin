@@ -17,6 +17,10 @@ export type AuditAction =
   | "task_delivered"
   | "task_inprogress"
   | "task_completed"
+  | "task_disputed"
+  | "task_cancelled"
+  | "claim_approved"
+  | "claim_rejected"
   | "payment_processed"
   | "user_registered";
 export type EntityType = "task" | "claim" | "payment" | "user";
@@ -150,3 +154,38 @@ export type UpdateClaim = Partial<Omit<Claim, "id" | "created_at">>;
 export type UpdatePayment = Partial<Omit<Payment, "id" | "created_at" | "updated_at">>;
 export type UpdateReview = Partial<Omit<Review, "id" | "created_at">>;
 export type UpdateNotification = Partial<Omit<Notification, "id" | "created_at">>;
+
+// Extended types for components
+export type TaskWithRelations = Task & {
+  creator: {
+    id: string;
+    name: string | null;
+    email: string;
+    avatar_url: string | null;
+  };
+  primary_assignee: {
+    id: string;
+    name: string | null;
+    email: string;
+    avatar_url: string | null;
+  } | null;
+  claims?: {
+    id: string;
+    message: string | null;
+    status: ClaimStatus;
+    created_at: string;
+    coder: {
+      id: string;
+      name: string | null;
+      email: string;
+      avatar_url: string | null;
+    };
+  }[];
+};
+
+export type TaskGroup = {
+  status: string;
+  title: string;
+  color: string;
+  tasks: TaskWithRelations[];
+};
