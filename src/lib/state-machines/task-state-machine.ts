@@ -50,6 +50,18 @@ export const TASK_STATES: Record<TaskState, TaskStateConfig> = {
     canBeDisputed: false,
     canBeCancelled: true,
   },
+  inprogress: {
+    state: "inprogress",
+    title: "In Progress",
+    description: "Task is actively being worked on by the assigned coder",
+    color: "warning",
+    canBeAssigned: true,
+    canBeClaimed: false,
+    canBeDelivered: true,
+    canBeCompleted: false,
+    canBeDisputed: false,
+    canBeCancelled: true,
+  },
   delivered: {
     state: "delivered",
     title: "Delivered",
@@ -111,6 +123,13 @@ export const TASK_TRANSITIONS: TaskTransition[] = [
   },
   {
     from: "open",
+    to: "inprogress",
+    allowedRoles: ["admin", "superuser"],
+    description: "Admin directly assigns task to coder",
+    action: "assign",
+  },
+  {
+    from: "open",
     to: "cancelled",
     allowedRoles: ["viber", "admin", "superuser"],
     description: "Viber cancels the task",
@@ -118,10 +137,24 @@ export const TASK_TRANSITIONS: TaskTransition[] = [
   },
   {
     from: "claimed",
+    to: "inprogress",
+    allowedRoles: ["coder", "admin", "superuser"],
+    description: "Coder starts working on the task",
+    action: "start_work",
+  },
+  {
+    from: "inprogress",
     to: "delivered",
     allowedRoles: ["coder", "admin", "superuser"],
     description: "Coder delivers the work",
     action: "deliver",
+  },
+  {
+    from: "inprogress",
+    to: "claimed",
+    allowedRoles: ["coder", "admin", "superuser"],
+    description: "Coder pauses work on the task",
+    action: "pause_work",
   },
   {
     from: "claimed",
@@ -226,7 +259,18 @@ export class TaskStateMachine {
     return TASK_STATES[this.currentState].canBeCancelled;
   }
 
-  isAssigned(): boolean {
+  isAssigned(userRole: UserRole, isAssignee: boolean = false): boolean {
+    // If user is a viber (task creator), they can never be assigned to their own task
+    if (userRole === "viber") {
+      return false;
+    }
+
+    // For coders, they are assigned if they are the assignee and the task is not open
+    if (userRole === "coder") {
+      return isAssignee && this.currentState !== "open";
+    }
+
+    // For admin/superuser, they can be considered assigned if the task has an assignee
     return this.currentState !== "open";
   }
 
@@ -248,25 +292,27 @@ export class TaskStateMachine {
 
     switch (this.currentState) {
       case "open":
-        return userRole === "viber"
-          ? "Waiting for coders to claim"
-          : "Available to claim";
+        return userRole === "viber" ? "Waiting for coders to claim" : "Available to claim";
 
       case "claimed":
         if (isAssignee) {
           return "You are working on this task";
         }
+        return userRole === "viber" ? "Task claimed by a coder" : "Task is in progress";
+
+      case "inprogress":
+        if (isAssignee) {
+          return "You are working on this task";
+        }
         return userRole === "viber"
-          ? "Task claimed by a coder"
+          ? "Task is actively being worked on by a coder"
           : "Task is in progress";
 
       case "delivered":
         if (userRole === "viber") {
           return "Review the delivery";
         }
-        return isAssignee
-          ? "Waiting for viber review"
-          : "Task has been delivered";
+        return isAssignee ? "Waiting for viber review" : "Task has been delivered";
 
       case "completed":
         return "Task completed successfully";
@@ -283,16 +329,22 @@ export class TaskStateMachine {
   }
 
   // Get action buttons that should be shown
-  getAvailableActions(
-    userRole: UserRole,
-    isAssignee: boolean = false
-  ): string[] {
+  getAvailableActions(userRole: UserRole, isAssignee: boolean = false): string[] {
     const actions: string[] = [];
 
     // Admin users can perform all actions
     if (userRole === "admin" || userRole === "superuser") {
       if (this.canBeClaimed()) {
         actions.push("claim");
+      }
+      if (this.currentState === "open") {
+        actions.push("assign");
+      }
+      if (this.currentState === "claimed") {
+        actions.push("start_work");
+      }
+      if (this.currentState === "inprogress") {
+        actions.push("pause_work");
       }
       if (this.canBeDelivered()) {
         actions.push("deliver");
@@ -317,6 +369,16 @@ export class TaskStateMachine {
     // Regular user role-based permissions
     if (this.canBeClaimed() && userRole === "coder") {
       actions.push("claim");
+    }
+
+    // Add start_work action for claimed tasks
+    if (this.currentState === "claimed" && userRole === "coder" && isAssignee) {
+      actions.push("start_work");
+    }
+
+    // Add pause_work action for inprogress tasks
+    if (this.currentState === "inprogress" && userRole === "coder" && isAssignee) {
+      actions.push("pause_work");
     }
 
     if (this.canBeDelivered() && userRole === "coder" && isAssignee) {
@@ -352,11 +414,6 @@ export const getTaskStateConfig = (state: TaskState): TaskStateConfig => {
   return TASK_STATES[state];
 };
 
-export const getValidTransitions = (
-  fromState: TaskState,
-  userRole: UserRole
-): TaskTransition[] => {
-  return TASK_TRANSITIONS.filter(
-    (t) => t.from === fromState && t.allowedRoles.includes(userRole)
-  );
+export const getValidTransitions = (fromState: TaskState, userRole: UserRole): TaskTransition[] => {
+  return TASK_TRANSITIONS.filter((t) => t.from === fromState && t.allowedRoles.includes(userRole));
 };

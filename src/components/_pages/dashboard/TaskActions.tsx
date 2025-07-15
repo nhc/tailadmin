@@ -47,7 +47,7 @@ export const TaskActions = ({ task, user, onAction }: TaskActionsProps) => {
         <button
           key={action}
           onClick={() => onAction(action, task.id)}
-          className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+          className={`px-3 py-1 text-sm font-medium rounded-md transition-colors border border-gray-200 ${
             action === "claim"
               ? "bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/30"
               : action === "deliver"

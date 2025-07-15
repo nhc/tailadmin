@@ -6,7 +6,8 @@ import type { Task, TaskStatus, User } from "@/lib/db/api/types";
 import Badge from "@/components/ui/badge/Badge";
 import { ClockIcon, DollarSignIcon, UserIcon, TagIcon, InfoIcon } from "lucide-react";
 import { useTaskStateMachine } from "@/lib/hooks/useTaskStateMachine";
-import { getTasksByCreator } from "@/lib/actions/tasks";
+
+import { TaskActions } from "./TaskActions";
 
 // Task Status Message Component
 const TaskStatusMessage = ({
@@ -20,16 +21,21 @@ const TaskStatusMessage = ({
   isViber: boolean;
   isCoder: boolean;
 }) => {
-  const isAssignee = task.primary_assignee?.id === user?.id;
-  const userRole = isViber ? "viber" : isCoder ? "coder" : "admin";
+  const isAssignee = task.primary_assignee?.id === user?.id && task.creator.id !== user?.id;
+
+  const userRole = isViber ? "viber" : "coder";
 
   const { statusMessage } = useTaskStateMachine(task.status as TaskStatus, userRole, isAssignee);
 
+  console.log("statusMessage", statusMessage, task.status, userRole, isAssignee);
   return (
-    <div className="flex items-center gap-2 text-sm">
-      <UserIcon className="w-4 h-4 text-gray-500" />
-      <span className="text-gray-600 dark:text-gray-400">{statusMessage}</span>
-    </div>
+    <>
+      <div className="flex items-center gap-2 text-sm">
+        <UserIcon className="w-4 h-4 text-gray-500" />
+        <span className="text-gray-600 dark:text-gray-400">{statusMessage}</span>
+      </div>
+      <TaskActions task={task} user={user} onAction={() => {}} />
+    </>
   );
 };
 

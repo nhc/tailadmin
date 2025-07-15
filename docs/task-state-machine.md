@@ -10,8 +10,8 @@ The task state machine manages the complete workflow for tasks in the Last20 pla
 
 **1. Core State Machine (`src/lib/state-machines/task-state-machine.ts`)**
 
-- **6 States**: `open`, `claimed`, `delivered`, `completed`, `disputed`, `cancelled`
-- **8 Valid Transitions**: Each with role-based permissions and business rules
+- **7 States**: `open`, `claimed`, `inprogress`, `delivered`, `completed`, `disputed`, `cancelled`
+- **11 Valid Transitions**: Each with role-based permissions and business rules
 - **State Configurations**: Colors, descriptions, and action capabilities for each state
 
 **2. React Hook (`src/lib/hooks/useTaskStateMachine.ts`)**
@@ -33,51 +33,65 @@ The task state machine manages the complete workflow for tasks in the Last20 pla
 graph LR
     A[open] --> B[claimed]
     A --> C[cancelled]
-    B --> D[delivered]
+    A --> D[inprogress]
+    B --> E[inprogress]
     B --> C
-    D --> E[completed]
-    D --> F[disputed]
-    F --> E
-    F --> C
+    D --> F[delivered]
+    D --> B
+    E --> F
+    F --> G[completed]
+    F --> H[disputed]
+    H --> G
+    H --> C
 ```
 
 ### State Definitions
 
-| State       | Description                            | Color   | Can Be Claimed | Can Be Delivered | Can Be Completed |
-| ----------- | -------------------------------------- | ------- | -------------- | ---------------- | ---------------- |
-| `open`      | Available for coders to claim          | success | ✅             | ❌               | ❌               |
-| `claimed`   | Coder is working on the task           | warning | ❌             | ✅               | ❌               |
-| `delivered` | Work delivered, waiting for review     | primary | ❌             | ❌               | ✅               |
-| `completed` | Task completed and payment released    | success | ❌             | ❌               | ❌               |
-| `disputed`  | Delivery disputed, requires resolution | error   | ❌             | ❌               | ❌               |
-| `cancelled` | Task has been cancelled                | light   | ❌             | ❌               | ❌               |
+| State        | Description                            | Color   | Can Be Claimed | Can Be Delivered | Can Be Completed |
+| ------------ | -------------------------------------- | ------- | -------------- | ---------------- | ---------------- |
+| `open`       | Available for coders to claim          | success | ✅             | ❌               | ❌               |
+| `claimed`    | Coder has claimed but not started work | warning | ❌             | ❌               | ❌               |
+| `inprogress` | Coder is actively working on the task  | warning | ❌             | ✅               | ❌               |
+| `delivered`  | Work delivered, waiting for review     | primary | ❌             | ❌               | ✅               |
+| `completed`  | Task completed and payment released    | success | ❌             | ❌               | ❌               |
+| `disputed`   | Delivery disputed, requires resolution | error   | ❌             | ❌               | ❌               |
+| `cancelled`  | Task has been cancelled                | light   | ❌             | ❌               | ❌               |
 
 ### Valid Transitions
 
-| From        | To          | Allowed Roles        | Action              | Description                 |
-| ----------- | ----------- | -------------------- | ------------------- | --------------------------- |
-| `open`      | `claimed`   | `["coder"]`          | `claim`             | Coder claims the task       |
-| `open`      | `cancelled` | `["viber"]`          | `cancel`            | Viber cancels the task      |
-| `claimed`   | `delivered` | `["coder"]`          | `deliver`           | Coder delivers the work     |
-| `claimed`   | `cancelled` | `["viber", "coder"]` | `cancel`            | Task is cancelled           |
-| `delivered` | `completed` | `["viber"]`          | `complete`          | Viber accepts the delivery  |
-| `delivered` | `disputed`  | `["viber"]`          | `dispute`           | Viber disputes the delivery |
-| `disputed`  | `completed` | `["viber"]`          | `resolve_for_coder` | Dispute resolved for coder  |
-| `disputed`  | `cancelled` | `["viber"]`          | `resolve_for_viber` | Dispute resolved for viber  |
+| From         | To           | Allowed Roles                              | Action              | Description                          |
+| ------------ | ------------ | ------------------------------------------ | ------------------- | ------------------------------------ |
+| `open`       | `claimed`    | `["coder", "admin", "superuser"]`          | `claim`             | Coder claims the task                |
+| `open`       | `inprogress` | `["admin", "superuser"]`                   | `assign`            | Admin directly assigns task to coder |
+| `open`       | `cancelled`  | `["viber", "admin", "superuser"]`          | `cancel`            | Viber cancels the task               |
+| `claimed`    | `inprogress` | `["coder", "admin", "superuser"]`          | `start_work`        | Coder starts working on the task     |
+| `claimed`    | `cancelled`  | `["viber", "coder", "admin", "superuser"]` | `cancel`            | Task is cancelled                    |
+| `inprogress` | `delivered`  | `["coder", "admin", "superuser"]`          | `deliver`           | Coder delivers the work              |
+| `inprogress` | `claimed`    | `["coder", "admin", "superuser"]`          | `pause_work`        | Coder pauses work on the task        |
+| `delivered`  | `completed`  | `["viber", "admin", "superuser"]`          | `complete`          | Viber accepts the delivery           |
+| `delivered`  | `disputed`   | `["viber", "admin", "superuser"]`          | `dispute`           | Viber disputes the delivery          |
+| `disputed`   | `completed`  | `["viber", "admin", "superuser"]`          | `resolve_for_coder` | Dispute resolved for coder           |
+| `disputed`   | `cancelled`  | `["viber", "admin", "superuser"]`          | `resolve_for_viber` | Dispute resolved for viber           |
 
 ## Role-Based Permissions
 
 ### Viber (Task Creator)
 
 - **Can do**: Cancel open tasks, accept/dispute deliveries, resolve disputes
-- **Cannot do**: Claim tasks, deliver work
+- **Cannot do**: Claim tasks, deliver work, start/pause work
 - **Status messages**: "Waiting for coders to claim", "Review the delivery", etc.
 
 ### Coder (Task Worker)
 
-- **Can do**: Claim open tasks, deliver work, cancel claimed tasks
+- **Can do**: Claim open tasks, start/pause work, deliver work, cancel claimed tasks
 - **Cannot do**: Accept deliveries, dispute deliveries
 - **Status messages**: "Available to claim", "You are working on this task", etc.
+
+### Admin/Superuser
+
+- **Can do**: All actions across all states
+- **Special abilities**: Direct task assignment, dispute resolution
+- **Status messages**: Context-aware based on task state
 
 ## Implementation
 
@@ -138,11 +152,7 @@ export const useTaskStateMachine = (
 
 ```typescript
 // In a component
-const { statusMessage, availableActions } = useTaskStateMachine(
-  task.status,
-  user.role,
-  isAssignee
-);
+const { statusMessage, availableActions } = useTaskStateMachine(task.status, user.role, isAssignee);
 
 // Display status message
 <span>{statusMessage}</span>;
@@ -150,9 +160,7 @@ const { statusMessage, availableActions } = useTaskStateMachine(
 // Show action buttons
 {
   availableActions.map((action) => (
-    <button onClick={() => handleAction(action)}>
-      {getActionLabel(action)}
-    </button>
+    <button onClick={() => handleAction(action)}>{getActionLabel(action)}</button>
   ));
 }
 ```
@@ -183,6 +191,55 @@ const { statusMessage, availableActions } = useTaskStateMachine(
 - TypeScript ensures valid states and transitions
 - Compile-time checking of business rules
 - IntelliSense support for all state operations
+
+## Recent Changes: Addition of 'inprogress' State
+
+### 🆕 **What Changed**
+
+**1. Database Schema Updates**
+
+- Added `'inprogress'` to the `task_status` enum via migration `20250715081218_update_enum_taskandaudit.sql`
+- Added `'task_inprogress'` to the `audit_action` enum for tracking
+
+**2. TypeScript Type Updates**
+
+- Updated `TaskStatus` type in `src/lib/db/api/types.ts` to include `'inprogress'`
+- Updated `AuditAction` type to include `'task_inprogress'`
+
+**3. State Machine Enhancements**
+
+- Added new state configuration for `inprogress` with appropriate capabilities
+- Added 3 new transitions:
+  - `open → inprogress` (admin assignment)
+  - `claimed → inprogress` (start work)
+  - `inprogress → claimed` (pause work)
+- Updated status messages to differentiate between `claimed` and `inprogress`
+- Enhanced action availability logic for work management
+
+### 🎯 **Business Logic Improvements**
+
+**Before**: Tasks went directly from `claimed` to `delivered`
+**After**: Tasks now have a dedicated `inprogress` state for active work
+
+**Benefits**:
+
+- Better tracking of actual work progress
+- Ability to pause and resume work
+- Clearer distinction between claimed and actively worked tasks
+- More granular audit trail
+- Better project management capabilities
+
+### 🔄 **New Workflow**
+
+1. **Task Creation**: Task starts in `open` state
+2. **Task Assignment**:
+   - Coders can `claim` → moves to `claimed`
+   - Admins can `assign` → moves directly to `inprogress`
+3. **Work Management**:
+   - `claimed` → `start_work` → `inprogress`
+   - `inprogress` → `pause_work` → `claimed`
+   - `inprogress` → `deliver` → `delivered`
+4. **Review Process**: `delivered` → `completed` or `disputed`
 
 ## Next Steps
 
@@ -218,7 +275,8 @@ const auditTrail = {
 // Trigger notifications based on state changes
 const notifications = {
   "open->claimed": "notify_viber_task_claimed",
-  "claimed->delivered": "notify_viber_task_delivered",
+  "claimed->inprogress": "notify_viber_work_started",
+  "inprogress->delivered": "notify_viber_task_delivered",
   "delivered->completed": "notify_coder_payment_released",
 };
 ```
@@ -229,6 +287,7 @@ const notifications = {
 // Payment state tied to task state
 const paymentActions = {
   claimed: "hold_payment",
+  inprogress: "hold_payment",
   completed: "release_payment",
   disputed: "freeze_payment",
   cancelled: "refund_payment",
@@ -262,15 +321,21 @@ describe("TaskStateMachine", () => {
   it("should allow valid transitions", () => {
     const machine = createTaskStateMachine("open");
     expect(machine.canTransitionTo("claimed", "coder")).toBe(true);
+    expect(machine.canTransitionTo("inprogress", "admin")).toBe(true);
     expect(machine.canTransitionTo("claimed", "viber")).toBe(false);
   });
 
   it("should provide correct status messages", () => {
     const machine = createTaskStateMachine("open");
-    expect(machine.getStatusMessage("viber")).toBe(
-      "Waiting for coders to claim"
-    );
+    expect(machine.getStatusMessage("viber")).toBe("Waiting for coders to claim");
     expect(machine.getStatusMessage("coder")).toBe("Available to claim");
+  });
+
+  it("should handle inprogress state correctly", () => {
+    const machine = createTaskStateMachine("inprogress");
+    expect(machine.getStatusMessage("coder", true)).toBe("You are working on this task");
+    expect(machine.canTransitionTo("delivered", "coder")).toBe(true);
+    expect(machine.canTransitionTo("claimed", "coder")).toBe(true);
   });
 });
 ```
@@ -284,6 +349,20 @@ describe("TaskActions", () => {
     const user = { role: "coder" };
     render(<TaskActions task={task} user={user} />);
     expect(screen.getByText("Claim Task")).toBeInTheDocument();
+  });
+
+  it("should show start work button for claimed tasks", () => {
+    const task = { status: "claimed" };
+    const user = { role: "coder" };
+    render(<TaskActions task={task} user={user} isAssignee={true} />);
+    expect(screen.getByText("Start Work")).toBeInTheDocument();
+  });
+
+  it("should show pause work button for inprogress tasks", () => {
+    const task = { status: "inprogress" };
+    const user = { role: "coder" };
+    render(<TaskActions task={task} user={user} isAssignee={true} />);
+    expect(screen.getByText("Pause Work")).toBeInTheDocument();
   });
 });
 ```
@@ -299,6 +378,8 @@ const getStatusMessage = (status: string, userRole: string) => {
   switch (status) {
     case "open":
       return userRole === "viber" ? "Waiting..." : "Available...";
+    case "claimed":
+      return "Task claimed by coder";
     // ... more cases
   }
 };
@@ -325,6 +406,8 @@ const showDeliverButton = status === "claimed" && isAssignee;
 const { availableActions } = useTaskStateMachine(status, userRole, isAssignee);
 const showClaimButton = availableActions.includes("claim");
 const showDeliverButton = availableActions.includes("deliver");
+const showStartWorkButton = availableActions.includes("start_work");
+const showPauseWorkButton = availableActions.includes("pause_work");
 ```
 
-This state machine provides a solid foundation for the MVP and can easily scale to handle more complex workflows, approval processes, and business rules as the platform grows.
+This state machine provides a solid foundation for the MVP and can easily scale to handle more complex workflows, approval processes, and business rules as the platform grows. The addition of the `inprogress` state significantly improves the granularity of task tracking and provides better project management capabilities.

@@ -2,7 +2,7 @@ export type UserRole = "viber" | "coder" | "admin" | "superuser";
 export type TaskStatus =
   | "open"
   | "claimed"
-  | "progress"
+  | "inprogress"
   | "delivered"
   | "completed"
   | "disputed"
@@ -15,6 +15,7 @@ export type AuditAction =
   | "task_created"
   | "task_claimed"
   | "task_delivered"
+  | "task_inprogress"
   | "task_completed"
   | "payment_processed"
   | "user_registered";
