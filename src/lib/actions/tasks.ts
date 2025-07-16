@@ -492,9 +492,15 @@ export const approveClaim = async (claimId: string) => {
       throw new Error("Only viber users can approve claims");
     }
 
-    // Approve the claim
+    // Get the claim to find the task ID
     const { claimsApi } = await import("@/lib/db/api");
+    const claim = await claimsApi.getById(supabase, claimId);
+
+    // Approve the claim
     const approvedClaim = await claimsApi.approve(supabase, claimId);
+
+    // Update the task status to inprogress
+    const updatedTask = await tasksApi.updateStatus(supabase, claim.task_id, "inprogress");
 
     // Create audit log entry
     const { auditTrailApi } = await import("@/lib/db/api");
@@ -505,12 +511,13 @@ export const approveClaim = async (claimId: string) => {
       entity_id: claimId,
       metadata: {
         claimId,
+        taskId: claim.task_id,
         approvedBy: session.user.id,
         approvedAt: new Date().toISOString(),
       },
     });
 
-    return approvedClaim;
+    return { approvedClaim, updatedTask };
   } catch (error) {
     console.error("Failed to approve claim:", error);
     throw error;

@@ -237,7 +237,7 @@ const TaskDetailsPage = () => {
           )}
 
           {task.status !== "open" && (
-            <div className="flex flex-row items-center justify-center gap-2">
+            <div className="flex flex-col items-left justify-left gap-2">
               <TaskStatusAndActions
                 task={task}
                 user={user}

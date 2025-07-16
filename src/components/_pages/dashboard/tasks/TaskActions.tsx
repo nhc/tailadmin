@@ -88,6 +88,9 @@ export const TaskActions = ({ task, user, onAction, onTaskUpdated }: TaskActions
     setLoadingAction(action);
     setError(null);
 
+    console.log("TaskActions action", action);
+    console.log("TaskActions taskId", taskId);
+
     try {
       let result;
 
@@ -146,8 +149,7 @@ export const TaskActions = ({ task, user, onAction, onTaskUpdated }: TaskActions
       setLoadingAction(null);
     }
   };
-  console.log("TaskActions availableActions", availableActions);
-  console.log("TaskActions validTransitions", validTransitions);
+
   if (availableActions.length === 0) {
     return null;
   }
@@ -166,7 +168,7 @@ export const TaskActions = ({ task, user, onAction, onTaskUpdated }: TaskActions
             key={action}
             onClick={() => handleAction(action, task.id)}
             disabled={loadingAction === action}
-            className={`px-3 py-1 text-sm font-medium rounded-md transition-colors border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed ${
+            className={`px-6 py-4 text-sm font-medium rounded-md transition-colors border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed ${
               action === "claim"
                 ? "bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/30"
                 : action === "deliver"

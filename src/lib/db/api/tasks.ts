@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Task, InsertTask, UpdateTask, TaskStatus } from "./types";
+import type { Task, InsertTask, UpdateTask, TaskStatus, ClaimStatus } from "./types";
 
 export const tasksApi = {
   // Get task by ID
@@ -10,7 +10,14 @@ export const tasksApi = {
         `
         *,
         creator:users!tasks_creator_id_fkey(id, name, email, avatar_url, nickname),
-        primary_assignee:users!tasks_primary_assignee_id_fkey(id, name, email, avatar_url, nickname)
+        primary_assignee:users!tasks_primary_assignee_id_fkey(id, name, email, avatar_url, nickname),
+          claims(
+          id,
+          message,
+          status,
+          created_at,
+          coder:users!claims_coder_id_fkey(id, name, email, avatar_url, nickname)
+        )
       `
       )
       .eq("id", id)
@@ -32,6 +39,12 @@ export const tasksApi = {
         avatar_url: string | null;
         nickname: string | null;
       } | null;
+      claims: {
+        id: string;
+        message: string | null;
+        status: ClaimStatus;
+        created_at: string;
+      }[];
     };
   },
 

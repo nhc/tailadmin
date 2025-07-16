@@ -18,19 +18,19 @@ export const TaskViewCard = ({
 }) => {
   const claimedBy = task.primary_assignee?.nickname || task.primary_assignee?.name;
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-2">
       <div className="">
         <div className="">
           {/* Creator Information */}
           <div className="">
-            <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
+            {/* <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
               Task Creator
-            </h3>
+            </h3> */}
             <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
               <UserIcon className="w-6 h-6 text-gray-600" />
               <div>
                 <p className="font-medium text-gray-800 dark:text-white">
-                  {task.creator.name || "Anonymous"}
+                  Created by {task.creator.name || "Anonymous"}
                 </p>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
                   Member since {formatDate(user?.created_at || "")}
@@ -40,7 +40,7 @@ export const TaskViewCard = ({
           </div>
 
           {/* Task Header */}
-          <div className="m-6">
+          <div className="my-6 mx-2">
             <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-4">{task.title}</h1>
             <p className="text-lg text-gray-600 dark:text-gray-400 leading-relaxed">
               {task.description}

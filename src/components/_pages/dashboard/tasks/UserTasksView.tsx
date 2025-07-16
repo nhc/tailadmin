@@ -6,7 +6,7 @@ import type { Task, TaskStatus, User, TaskWithRelations, TaskGroup } from "@/lib
 import Badge from "@/components/ui/badge/Badge";
 import { ClockIcon, DollarSignIcon, UserIcon, TagIcon, InfoIcon } from "lucide-react";
 import { useTaskStateMachine } from "@/lib/hooks/useTaskStateMachine";
-
+import Link from "next/link";
 import { TaskActions } from "./TaskActions";
 import { useRouter } from "next/navigation";
 
@@ -302,7 +302,6 @@ export const UserTasksView = ({
                     <DollarSignIcon className="w-4 h-4 text-green-600" />
                     <span className="font-medium text-green-600">{formatPrice(task.price)}</span>
                   </div>
-
                   {/* Category */}
                   <div className="flex items-center gap-2 text-sm">
                     <TagIcon className="w-4 h-4 text-gray-500" />
@@ -310,7 +309,6 @@ export const UserTasksView = ({
                       {task.category}
                     </span>
                   </div>
-
                   {/* Tech Stack */}
                   {task.tech_stack.length > 0 && (
                     <div className="flex flex-wrap gap-1">
@@ -326,7 +324,6 @@ export const UserTasksView = ({
                       )}
                     </div>
                   )}
-
                   {/* Created Date */}
                   <div className="flex items-center gap-2 text-sm">
                     <ClockIcon className="w-4 h-4 text-gray-500" />
@@ -334,7 +331,6 @@ export const UserTasksView = ({
                       Created {formatDate(task.created_at)}
                     </span>
                   </div>
-
                   {/* Creator/Assignee Info */}
                   <div className="flex items-center gap-2 text-sm">
                     <UserIcon className="w-4 h-4 text-gray-500" />
@@ -345,14 +341,22 @@ export const UserTasksView = ({
                     </span>
                   </div>
 
+                  {/* Link to task */}
+                  <div className="flex items-center gap-2 text-sm">
+                    <Link href={`/dashboard/tasks/view/${task.id}`}>
+                      <button className="bg-blue-500 text-white px-4 py-2 rounded-md">
+                        View Task
+                      </button>
+                    </Link>
+                  </div>
                   {/* Assignment Status - Using state machine for consistent messaging */}
-                  <TaskStatusMessage
+                  {/* <TaskStatusMessage
                     task={task}
                     user={user}
                     isViber={isViber}
                     isCoder={isCoder}
                     onTaskUpdated={handleTaskUpdated}
-                  />
+                  /> */}
                 </div>
               </div>
             ))}
