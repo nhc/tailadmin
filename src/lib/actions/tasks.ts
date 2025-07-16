@@ -466,6 +466,18 @@ export const getClaimedTasksByStatus = async (coderId: string, status: TaskStatu
   }
 };
 
+// Helper function to check if user needs Stripe Connect setup
+const checkStripeConnectSetup = (user: any) => {
+  if (user.stripe_account_id) {
+    return { needsSetup: false };
+  }
+
+  return {
+    needsSetup: true,
+    message: "Please complete Stripe Connect setup to approve claims",
+  };
+};
+
 // Approve a claim
 export const approveClaim = async (claimId: string) => {
   try {
@@ -481,15 +493,26 @@ export const approveClaim = async (claimId: string) => {
       throw new Error("Not authenticated");
     }
 
-    // Get user info to check if they're a viber
+    // Get user info to check if they're a viber and their Stripe status
     const userResult = await supabase
       .from("users")
-      .select("role")
+      .select("role, stripe_account_id, email")
       .eq("id", session.user.id)
       .single();
 
     if (!userResult.data || userResult.data.role !== "viber") {
       throw new Error("Only viber users can approve claims");
+    }
+
+    // Check Stripe Connect setup
+    const stripeSetup = checkStripeConnectSetup(userResult.data);
+
+    if (stripeSetup.needsSetup) {
+      // Return special response for frontend to handle Stripe setup
+      return {
+        type: "stripe_setup_required",
+        message: stripeSetup.message,
+      };
     }
 
     // Get the claim to find the task ID

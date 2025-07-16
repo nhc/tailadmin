@@ -9,5 +9,6 @@ export default async function HomePageTasks() {
   // Fetch open tasks (waiting to be claimed)
   const { data: tasks, count } = await tasksApi.getByStatus(supabase, "open");
 
-  return <HomePageTasksClient count={count || 0} tasks={tasks || []} />;
+  // return <HomePageTasksClient count={count || 0} tasks={tasks || []} />;
+  return <div>HomePageTasks</div>;
 }

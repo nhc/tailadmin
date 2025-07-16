@@ -88,9 +88,6 @@ export const TaskActions = ({ task, user, onAction, onTaskUpdated }: TaskActions
     setLoadingAction(action);
     setError(null);
 
-    console.log("TaskActions action", action);
-    console.log("TaskActions taskId", taskId);
-
     try {
       let result;
 
@@ -121,7 +118,78 @@ export const TaskActions = ({ task, user, onAction, onTaskUpdated }: TaskActions
           break;
         case "approve_claim":
           if (userClaim?.id) {
-            result = await approveClaim(userClaim.id);
+            try {
+              const response = await fetch("/api/tasks/approve-claim", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  claimId: userClaim.id,
+                }),
+              });
+
+              if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || "Failed to approve claim");
+              }
+
+              result = await response.json();
+            } catch (error) {
+              console.error("approveClaim error:", error);
+              throw error;
+            }
+
+            // Handle Stripe Connect setup requirement
+            if (result && result.type === "stripe_setup_required") {
+              // Initiate Stripe Connect setup on client side
+              try {
+                // Step 1: Create Stripe account
+                const accountResponse = await fetch("/api/stripe/account", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({
+                    email: user.email,
+                    country: "US", // Default to US, could be made configurable
+                  }),
+                });
+
+                if (!accountResponse.ok) {
+                  const errorText = await accountResponse.text();
+                  throw new Error("Failed to create Stripe account");
+                }
+
+                const accountData = await accountResponse.json();
+                const accountId = accountData.account;
+
+                // Step 2: Create account link
+                const accountLinkResponse = await fetch("/api/stripe/account-links", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({
+                    accountId: accountId,
+                  }),
+                });
+
+                if (!accountLinkResponse.ok) {
+                  const errorText = await accountLinkResponse.text();
+                  throw new Error("Failed to create account link");
+                }
+
+                const accountLinkData = await accountLinkResponse.json();
+
+                // Redirect to Stripe Connect onboarding
+                window.location.href = accountLinkData.accountLink;
+                return; // Exit early to prevent further processing
+              } catch (error) {
+                console.error("Stripe Connect setup failed:", error);
+                throw new Error("Failed to setup Stripe Connect");
+              }
+            }
           }
           break;
         case "reject_claim":
@@ -137,7 +205,7 @@ export const TaskActions = ({ task, user, onAction, onTaskUpdated }: TaskActions
       onAction(action, taskId);
 
       // Call the optional callback with updated task (only for task actions, not claim actions)
-      if (onTaskUpdated && result && "title" in result) {
+      if (onTaskUpdated && result && typeof result === "object" && "title" in result) {
         onTaskUpdated(result as Task);
       }
       router.refresh();
