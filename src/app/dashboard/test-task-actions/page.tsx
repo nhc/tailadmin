@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { TaskActions } from "@/components/_pages/dashboard/TaskActions";
+import { TaskActions } from "@/components/_pages/dashboard/tasks/TaskActions";
 import type { Task, User } from "@/lib/db/api/types";
 
 // Mock data for testing

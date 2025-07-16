@@ -162,12 +162,14 @@ export type TaskWithRelations = Task & {
     name: string | null;
     email: string;
     avatar_url: string | null;
+    nickname: string | null;
   };
   primary_assignee: {
     id: string;
     name: string | null;
     email: string;
     avatar_url: string | null;
+    nickname: string | null;
   } | null;
   claims?: {
     id: string;
@@ -179,6 +181,7 @@ export type TaskWithRelations = Task & {
       name: string | null;
       email: string;
       avatar_url: string | null;
+      nickname: string | null;
     };
   }[];
 };

@@ -2,7 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { tasksApi } from "@/lib/db/api/tasks";
-import type { InsertTask, UpdateTask, TaskStatus, Task } from "@/lib/db/api/types";
+import type { InsertTask, UpdateTask, TaskStatus, Task, ClaimStatus } from "@/lib/db/api/types";
 
 export const getTasksByCreator = async (creatorId: string) => {
   if (!creatorId) {
@@ -32,14 +32,14 @@ export const getByCreatorAndStatus = async (creatorId: string, status: TaskStatu
       .select(
         `
         *,
-        creator:users!tasks_creator_id_fkey(id, name, email, avatar_url),
-        primary_assignee:users!tasks_primary_assignee_id_fkey(id, name, email, avatar_url),
+        creator:users!tasks_creator_id_fkey(id, name, email, avatar_url, nickname),
+        primary_assignee:users!tasks_primary_assignee_id_fkey(id, name, email, avatar_url, nickname),
         claims(
           id,
           message,
           status,
           created_at,
-          coder:users!claims_coder_id_fkey(id, name, email, avatar_url)
+          coder:users!claims_coder_id_fkey(id, name, email, avatar_url, nickname)
         )
       `
       )
@@ -56,23 +56,26 @@ export const getByCreatorAndStatus = async (creatorId: string, status: TaskStatu
           name: string | null;
           email: string;
           avatar_url: string | null;
+          nickname: string | null;
         };
         primary_assignee: {
           id: string;
           name: string | null;
           email: string;
           avatar_url: string | null;
+          nickname: string | null;
         } | null;
         claims: {
           id: string;
           message: string | null;
-          status: string;
+          status: ClaimStatus;
           created_at: string;
           coder: {
             id: string;
             name: string | null;
             email: string;
             avatar_url: string | null;
+            nickname: string | null;
           };
         }[];
       })[],
@@ -408,14 +411,14 @@ export const getClaimedTasksByStatus = async (coderId: string, status: TaskStatu
       .select(
         `
         *,
-        creator:users!tasks_creator_id_fkey(id, name, email, avatar_url),
-        primary_assignee:users!tasks_primary_assignee_id_fkey(id, name, email, avatar_url),
+        creator:users!tasks_creator_id_fkey(id, name, email, avatar_url, nickname),
+        primary_assignee:users!tasks_primary_assignee_id_fkey(id, name, email, avatar_url, nickname),
         claims(
           id,
           message,
           status,
           created_at,
-          coder:users!claims_coder_id_fkey(id, name, email, avatar_url)
+          coder:users!claims_coder_id_fkey(id, name, email, avatar_url, nickname)
         )
       `
       )
@@ -432,23 +435,26 @@ export const getClaimedTasksByStatus = async (coderId: string, status: TaskStatu
           name: string | null;
           email: string;
           avatar_url: string | null;
+          nickname: string | null;
         };
         primary_assignee: {
           id: string;
           name: string | null;
           email: string;
           avatar_url: string | null;
+          nickname: string | null;
         } | null;
         claims: {
           id: string;
           message: string | null;
-          status: string;
+          status: ClaimStatus;
           created_at: string;
           coder: {
             id: string;
             name: string | null;
             email: string;
             avatar_url: string | null;
+            nickname: string | null;
           };
         }[];
       })[],

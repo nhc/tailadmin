@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 
-import tasksData from "./tasks.json";
+import tasksData from "./task.json";
 
 const TARGET_USER_ID = "8e36b017-e099-417e-88a1-3f5d2aea5d49";
 
@@ -103,72 +103,70 @@ const populateDatabase = async () => {
       });
 
       // Add some example claims for variety
-      if (Math.random() > 0.5) {
-        const claimMessage = `I can help with this! I have experience with ${task.tech_stack
-          .slice(0, 2)
-          .join(" and ")}.`;
+      // if (Math.random() > 0.5) {
+      //   const claimMessage = `I can help with this! I have experience with ${task.tech_stack
+      //     .slice(0, 2)
+      //     .join(" and ")}.`;
 
-        const { data: insertedClaim, error: claimError } = await supabase
-          .from("claims")
-          .insert({
-            task_id: insertedTask.id,
-            coder_id: TARGET_USER_ID, // Using same user for demo
-            message: claimMessage,
-            status: Math.random() > 0.7 ? "approved" : "pending",
-          })
-          .select()
-          .single();
+      //   const { data: insertedClaim, error: claimError } = await supabase
+      //     .from("claims")
+      //     .insert({
+      //       task_id: insertedTask.id,
+      //       coder_id: TARGET_USER_ID, // Using same user for demo
+      //       message: claimMessage,
+      //       status: Math.random() > 0.7 ? "approved" : "pending",
+      //     })
+      //     .select()
+      //     .single();
 
-        if (!claimError) {
-          console.log(`   📋 Added claim for: ${task.title}`);
+      //   if (!claimError) {
+      //     console.log(`   📋 Added claim for: ${task.title}`);
 
-          // Add audit trail for claim creation
-          await supabase.from("audit_trail").insert({
-            user_id: TARGET_USER_ID,
-            action_type: "task_claimed",
-            entity_type: "claim",
-            entity_id: insertedClaim.id,
-            metadata: {
-              task_id: insertedTask.id,
-              task_title: task.title,
-              claim_status: insertedClaim.status,
-              message: claimMessage,
-              source: "populate_script",
-            },
-          });
+      //     // Add audit trail for claim creation
+      //     await supabase.from("audit_trail").insert({
+      //       user_id: TARGET_USER_ID,
+      //       action_type: "task_claimed",
+      //       entity_type: "claim",
+      //       entity_id: insertedClaim.id,
+      //       metadata: {
+      //         task_id: insertedTask.id,
+      //         task_title: task.title,
+      //         claim_status: insertedClaim.status,
+      //         message: claimMessage,
+      //         source: "populate_script",
+      //       },
+      //     });
 
-          // If claim is approved, update task status
-          if (insertedClaim.status === "approved") {
-            await supabase
-              .from("tasks")
-              .update({
-                status: "claimed",
-                primary_assignee_id: TARGET_USER_ID,
-                status_timestamps: { claimed: new Date().toISOString() },
-              })
-              .eq("id", insertedTask.id);
+      //     // If claim is approved, update task status
+      //     if (insertedClaim.status === "approved") {
+      //       await supabase
+      //         .from("tasks")
+      //         .update({
+      //           status: "claimed",
+      //           primary_assignee_id: TARGET_USER_ID,
+      //           status_timestamps: { claimed: new Date().toISOString() },
+      //         })
+      //         .eq("id", insertedTask.id);
 
-            // Add audit trail for task assignment
-            await supabase.from("audit_trail").insert({
-              user_id: TARGET_USER_ID,
-              action_type: "task_claimed",
-              entity_type: "task",
-              entity_id: insertedTask.id,
-              metadata: {
-                assignee_id: TARGET_USER_ID,
-                claim_id: insertedClaim.id,
-                source: "populate_script",
-              },
-            });
-          }
-        }
-      }
+      //       // Add audit trail for task assignment
+      //       await supabase.from("audit_trail").insert({
+      //         user_id: TARGET_USER_ID,
+      //         action_type: "task_claimed",
+      //         entity_type: "task",
+      //         entity_id: insertedTask.id,
+      //         metadata: {
+      //           assignee_id: TARGET_USER_ID,
+      //           claim_id: insertedClaim.id,
+      //           source: "populate_script",
+      //         },
+      //       });
+      //     }
+      //   }
+      // }
     }
 
     console.log("\n🎉 Database population completed successfully!");
-    console.log(
-      `📊 Created ${tasksData.tasks.length} tasks for user ${TARGET_USER_ID}`
-    );
+    console.log(`📊 Created ${tasksData.tasks.length} tasks for user ${TARGET_USER_ID}`);
   } catch (error) {
     console.error("❌ Error populating database:", error);
     process.exit(1);

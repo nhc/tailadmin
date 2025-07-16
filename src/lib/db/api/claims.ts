@@ -10,7 +10,7 @@ export const claimsApi = {
         `
         *,
         task:tasks!claims_task_id_fkey(id, title, description, price, status),
-        coder:users!claims_coder_id_fkey(id, name, email, avatar_url)
+        coder:users!claims_coder_id_fkey(id, name, email, avatar_url, nickname)
       `
       )
       .eq("id", id)
@@ -30,6 +30,7 @@ export const claimsApi = {
         name: string | null;
         email: string;
         avatar_url: string | null;
+        nickname: string | null;
       };
     };
   },
@@ -41,7 +42,7 @@ export const claimsApi = {
       .select(
         `
         *,
-        coder:users!claims_coder_id_fkey(id, name, email, avatar_url, bio)
+        coder:users!claims_coder_id_fkey(id, name, email, avatar_url, bio, nickname)
       `
       )
       .eq("task_id", taskId)
@@ -55,17 +56,13 @@ export const claimsApi = {
         email: string;
         avatar_url: string | null;
         bio: string | null;
+        nickname: string | null;
       };
     })[];
   },
 
   // Get claims by coder
-  getByCoder: async (
-    supabase: SupabaseClient,
-    coderId: string,
-    page = 1,
-    limit = 50
-  ) => {
+  getByCoder: async (supabase: SupabaseClient, coderId: string, page = 1, limit = 50) => {
     const from = (page - 1) * limit;
     const to = from + limit - 1;
 
@@ -99,12 +96,7 @@ export const claimsApi = {
   },
 
   // Get claims by status
-  getByStatus: async (
-    supabase: SupabaseClient,
-    status: ClaimStatus,
-    page = 1,
-    limit = 50
-  ) => {
+  getByStatus: async (supabase: SupabaseClient, status: ClaimStatus, page = 1, limit = 50) => {
     const from = (page - 1) * limit;
     const to = from + limit - 1;
 
@@ -114,7 +106,7 @@ export const claimsApi = {
         `
         *,
         task:tasks!claims_task_id_fkey(id, title, description, price, status),
-        coder:users!claims_coder_id_fkey(id, name, email, avatar_url)
+        coder:users!claims_coder_id_fkey(id, name, email, avatar_url, nickname)
       `,
         { count: "exact" }
       )
@@ -137,6 +129,7 @@ export const claimsApi = {
           name: string | null;
           email: string;
           avatar_url: string | null;
+          nickname: string | null;
         };
       })[],
       count,
@@ -145,22 +138,14 @@ export const claimsApi = {
 
   // Create new claim
   create: async (supabase: SupabaseClient, claim: InsertClaim) => {
-    const { data, error } = await supabase
-      .from("claims")
-      .insert(claim)
-      .select()
-      .single();
+    const { data, error } = await supabase.from("claims").insert(claim).select().single();
 
     if (error) throw error;
     return data as Claim;
   },
 
   // Update claim
-  update: async (
-    supabase: SupabaseClient,
-    id: string,
-    updates: UpdateClaim
-  ) => {
+  update: async (supabase: SupabaseClient, id: string, updates: UpdateClaim) => {
     const { data, error } = await supabase
       .from("claims")
       .update(updates)
@@ -213,11 +198,7 @@ export const claimsApi = {
   },
 
   // Check if user has already claimed a task
-  hasUserClaimed: async (
-    supabase: SupabaseClient,
-    taskId: string,
-    coderId: string
-  ) => {
+  hasUserClaimed: async (supabase: SupabaseClient, taskId: string, coderId: string) => {
     const { data, error } = await supabase
       .from("claims")
       .select("id, status")

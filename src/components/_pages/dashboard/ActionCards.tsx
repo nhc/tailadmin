@@ -5,7 +5,7 @@ import { useUserContext } from "@/context/UserContext";
 import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import UserTasksView from "./UserTasksView";
+import UserTasksView from "./tasks/UserTasksView";
 
 type TaskSummary = {
   totalTasks: number;

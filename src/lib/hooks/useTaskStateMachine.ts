@@ -10,15 +10,19 @@ export const useTaskStateMachine = (
   taskStatus: TaskStatus,
   userRole: UserRole,
   isAssignee: boolean = false,
-  claimStatus?: ClaimStatus
+  claimStatus?: ClaimStatus,
+  coderInfo?: {
+    nickname: string | null;
+    name: string | null;
+  }
 ) => {
   const stateMachine = useMemo(() => createTaskStateMachine(taskStatus), [taskStatus]);
 
   const stateConfig = useMemo(() => getTaskStateConfig(taskStatus), [taskStatus]);
 
   const statusMessage = useMemo(
-    () => stateMachine.getStatusMessage(userRole, isAssignee, claimStatus),
-    [stateMachine, userRole, isAssignee, claimStatus]
+    () => stateMachine.getStatusMessage(userRole, isAssignee, claimStatus, coderInfo),
+    [stateMachine, userRole, isAssignee, claimStatus, coderInfo]
   );
 
   const availableActions = useMemo(

@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { tasksApi } from "@/lib/db/api";
 import { claimTask } from "@/lib/actions/tasks";
 import type { Task, TaskStatus } from "@/lib/db/api/types";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { ClockIcon, DollarSignIcon, TagIcon, UserIcon } from "lucide-react";
 import Badge from "@/components/ui/badge/Badge";
 import { useUserContext } from "@/context/UserContext";
@@ -15,6 +15,10 @@ import Button from "@/components/ui/button/Button";
 import TextArea from "@/components/form/input/TextArea";
 import Label from "@/components/form/Label";
 import { z } from "zod";
+import { TaskViewCard } from "@/components/_pages/dashboard/tasks/view/TaskViewCard";
+import { TaskActions } from "@/components/_pages/dashboard/tasks/TaskActions";
+import { TaskStatusMessage } from "@/components/_pages/dashboard/tasks/UserTasksView";
+import { TaskStatusAndActions } from "@/components/_pages/dashboard/tasks/TaskStatusAndActions";
 
 type TaskWithRelations = Task & {
   creator: {
@@ -22,17 +26,19 @@ type TaskWithRelations = Task & {
     name: string | null;
     email: string;
     avatar_url: string | null;
+    nickname: string | null;
   };
   primary_assignee: {
     id: string;
     name: string | null;
     email: string;
     avatar_url: string | null;
+    nickname: string | null;
   } | null;
 };
 
-export const TaskDetailsPage = () => {
-  const { user } = useUserContext();
+const TaskDetailsPage = () => {
+  const { user, isViber, isCoder } = useUserContext();
   const { isOpen, openModal, closeModal } = useModal();
   const {
     isOpen: isViberModalOpen,
@@ -41,6 +47,7 @@ export const TaskDetailsPage = () => {
   } = useModal();
 
   const params = useParams();
+  const router = useRouter();
   const taskId = params.taskId as string;
 
   const [task, setTask] = useState<TaskWithRelations | null>(null);
@@ -120,8 +127,8 @@ export const TaskDetailsPage = () => {
       setClaimMessage("");
       setClaimValidationError(null);
 
-      // Show success message
-      alert("Task claimed successfully!");
+      // Refresh the page to show updated information
+      router.refresh();
     } catch (err) {
       console.error("Failed to claim task:", err);
       const errorMessage = err instanceof Error ? err.message : "Failed to claim task";
@@ -156,21 +163,6 @@ export const TaskDetailsPage = () => {
 
     fetchTask();
   }, [taskId]);
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(price);
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  };
 
   if (loading) {
     return (
@@ -219,93 +211,13 @@ export const TaskDetailsPage = () => {
     );
   }
 
+  if (!user) return null;
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-4xl mx-auto">
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8">
-          {/* Creator Information */}
-          <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
-            <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
-              Task Creator
-            </h3>
-            <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-              <UserIcon className="w-6 h-6 text-gray-600" />
-              <div>
-                <p className="font-medium text-gray-800 dark:text-white">
-                  {task.creator.name || "Anonymous"}
-                </p>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Member since {formatDate(user?.created_at || "")}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Task Header */}
-          <div className="m-6">
-            <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-4">{task.title}</h1>
-            <p className="text-lg text-gray-600 dark:text-gray-400 leading-relaxed">
-              {task.description}
-            </p>
-          </div>
-
-          {/* Task Details Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            {/* Price */}
-            <div className="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
-              <DollarSignIcon className="w-6 h-6 text-green-600" />
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Budget</p>
-                <p className="text-xl font-bold text-green-600">{formatPrice(task.price)}</p>
-              </div>
-            </div>
-
-            {/* Category */}
-            <div className="flex items-center gap-3 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-              <TagIcon className="w-6 h-6 text-blue-600" />
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Category</p>
-                <p className="text-xl font-bold text-blue-600 capitalize">{task.category}</p>
-              </div>
-            </div>
-
-            {/* Status */}
-            <div className="flex items-center gap-3 p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-              <div className="w-6 h-6 rounded-full bg-purple-600"></div>
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Status</p>
-                <p className="text-xl font-bold text-purple-600 capitalize">{task.status}</p>
-              </div>
-            </div>
-
-            {/* Created Date */}
-            <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-              <ClockIcon className="w-6 h-6 text-gray-600" />
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Posted</p>
-                <p className="text-xl font-bold text-gray-800 dark:text-white">
-                  {formatDate(task.created_at)}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Tech Stack */}
-          {task.tech_stack.length > 0 && (
-            <div className="mb-8">
-              <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
-                Required Knowledge
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {task.tech_stack.map((tech, index) => (
-                  <Badge key={index} color="info" size="md">
-                    {tech}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          )}
-
+          <TaskViewCard task={task} user={user} />
           {/* Action Buttons */}
           {task.status === "open" && (
             <div className="mt-8 flex gap-4">
@@ -321,6 +233,19 @@ export const TaskDetailsPage = () => {
               >
                 Contact Viber
               </button>
+            </div>
+          )}
+
+          {task.status !== "open" && (
+            <div className="flex flex-row items-center justify-center gap-2">
+              <TaskStatusAndActions
+                task={task}
+                user={user}
+                isViber={isViber}
+                isCoder={isCoder}
+                context="view"
+                onTaskUpdated={() => {}}
+              />
             </div>
           )}
         </div>

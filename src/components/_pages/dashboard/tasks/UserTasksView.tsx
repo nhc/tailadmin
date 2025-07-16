@@ -8,9 +8,10 @@ import { ClockIcon, DollarSignIcon, UserIcon, TagIcon, InfoIcon } from "lucide-r
 import { useTaskStateMachine } from "@/lib/hooks/useTaskStateMachine";
 
 import { TaskActions } from "./TaskActions";
+import { useRouter } from "next/navigation";
 
 // Task Status Message Component
-const TaskStatusMessage = ({
+export const TaskStatusMessage = ({
   task,
   user,
   isViber,
@@ -23,6 +24,7 @@ const TaskStatusMessage = ({
   isCoder: boolean;
   onTaskUpdated?: (updatedTask: Task) => void;
 }) => {
+  const router = useRouter();
   const isAssignee = task.primary_assignee?.id === user?.id && task.creator.id !== user?.id;
 
   const userRole = isViber ? "viber" : "coder";
@@ -41,11 +43,20 @@ const TaskStatusMessage = ({
     claimStatus = userClaim?.status;
   }
 
+  // Get coder information for status messages
+  const coderInfo = task.primary_assignee
+    ? {
+        nickname: task.primary_assignee.nickname || null,
+        name: task.primary_assignee.name || null,
+      }
+    : undefined;
+
   const { statusMessage } = useTaskStateMachine(
     task.status as TaskStatus,
     userRole,
     isAssignee,
-    claimStatus
+    claimStatus,
+    coderInfo
   );
 
   const handleAction = (action: string, taskId: string) => {
@@ -58,7 +69,16 @@ const TaskStatusMessage = ({
         <UserIcon className="w-4 h-4 text-gray-500" />
         <span className="text-gray-600 dark:text-gray-400">{statusMessage}</span>
       </div>
-      <div></div>
+      <div>
+        <button
+          className="bg-blue-500 text-white px-4 py-2 rounded-md"
+          onClick={() => {
+            router.push(`/dashboard/tasks/view/${task.id}`);
+          }}
+        >
+          View Task
+        </button>
+      </div>
       <div className="flex flex-row items-center justify-center gap-2">
         <TaskActions
           task={task}

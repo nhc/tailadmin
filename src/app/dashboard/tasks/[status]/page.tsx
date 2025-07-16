@@ -1,4 +1,4 @@
-import UserTasksView from "@/components/_pages/dashboard/UserTasksView";
+import UserTasksView from "@/components/_pages/dashboard/tasks/UserTasksView";
 import { useServerUser } from "@/lib/hooks/useServerUser";
 import { TaskStatus } from "@/lib/db/api/types";
 import { headers } from "next/headers";

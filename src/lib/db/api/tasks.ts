@@ -9,8 +9,8 @@ export const tasksApi = {
       .select(
         `
         *,
-        creator:users!tasks_creator_id_fkey(id, name, email, avatar_url),
-        primary_assignee:users!tasks_primary_assignee_id_fkey(id, name, email, avatar_url)
+        creator:users!tasks_creator_id_fkey(id, name, email, avatar_url, nickname),
+        primary_assignee:users!tasks_primary_assignee_id_fkey(id, name, email, avatar_url, nickname)
       `
       )
       .eq("id", id)
@@ -23,12 +23,14 @@ export const tasksApi = {
         name: string | null;
         email: string;
         avatar_url: string | null;
+        nickname: string | null;
       };
       primary_assignee: {
         id: string;
         name: string | null;
         email: string;
         avatar_url: string | null;
+        nickname: string | null;
       } | null;
     };
   },
@@ -55,8 +57,8 @@ export const tasksApi = {
     let query = supabase.from("tasks").select(
       `
         *,
-        creator:users!tasks_creator_id_fkey(id, name, email, avatar_url),
-        primary_assignee:users!tasks_primary_assignee_id_fkey(id, name, email, avatar_url)
+        creator:users!tasks_creator_id_fkey(id, name, email, avatar_url, nickname),
+        primary_assignee:users!tasks_primary_assignee_id_fkey(id, name, email, avatar_url, nickname)
       `,
       { count: "exact" }
     );
@@ -120,8 +122,8 @@ export const tasksApi = {
       .select(
         `
         *,
-        creator:users!tasks_creator_id_fkey(id, name, email, avatar_url),
-        primary_assignee:users!tasks_primary_assignee_id_fkey(id, name, email, avatar_url)
+        creator:users!tasks_creator_id_fkey(id, name, email, avatar_url, nickname),
+        primary_assignee:users!tasks_primary_assignee_id_fkey(id, name, email, avatar_url, nickname)
       `,
         { count: "exact" }
       )
@@ -137,12 +139,14 @@ export const tasksApi = {
           name: string | null;
           email: string;
           avatar_url: string | null;
+          nickname: string | null;
         };
         primary_assignee: {
           id: string;
           name: string | null;
           email: string;
           avatar_url: string | null;
+          nickname: string | null;
         } | null;
       })[],
       count,
@@ -167,8 +171,8 @@ export const tasksApi = {
       .select(
         `
         *,
-        creator:users!tasks_creator_id_fkey(id, name, email, avatar_url),
-        primary_assignee:users!tasks_primary_assignee_id_fkey(id, name, email, avatar_url)
+        creator:users!tasks_creator_id_fkey(id, name, email, avatar_url, nickname),
+        primary_assignee:users!tasks_primary_assignee_id_fkey(id, name, email, avatar_url, nickname)
       `,
         { count: "exact" }
       )
@@ -185,12 +189,14 @@ export const tasksApi = {
           name: string | null;
           email: string;
           avatar_url: string | null;
+          nickname: string | null;
         };
         primary_assignee: {
           id: string;
           name: string | null;
           email: string;
           avatar_url: string | null;
+          nickname: string | null;
         } | null;
       })[],
       count,
@@ -207,8 +213,8 @@ export const tasksApi = {
       .select(
         `
         *,
-        creator:users!tasks_creator_id_fkey(id, name, email, avatar_url),
-        primary_assignee:users!tasks_primary_assignee_id_fkey(id, name, email, avatar_url)
+        creator:users!tasks_creator_id_fkey(id, name, email, avatar_url, nickname),
+        primary_assignee:users!tasks_primary_assignee_id_fkey(id, name, email, avatar_url, nickname)
       `,
         { count: "exact" }
       )
@@ -224,12 +230,14 @@ export const tasksApi = {
           name: string | null;
           email: string;
           avatar_url: string | null;
+          nickname: string | null;
         };
         primary_assignee: {
           id: string;
           name: string | null;
           email: string;
           avatar_url: string | null;
+          nickname: string | null;
         } | null;
       })[],
       count,
@@ -246,8 +254,8 @@ export const tasksApi = {
       .select(
         `
         *,
-        creator:users!tasks_creator_id_fkey(id, name, email, avatar_url),
-        primary_assignee:users!tasks_primary_assignee_id_fkey(id, name, email, avatar_url)
+        creator:users!tasks_creator_id_fkey(id, name, email, avatar_url, nickname),
+        primary_assignee:users!tasks_primary_assignee_id_fkey(id, name, email, avatar_url, nickname)
       `,
         { count: "exact" }
       )
@@ -263,12 +271,14 @@ export const tasksApi = {
           name: string | null;
           email: string;
           avatar_url: string | null;
+          nickname: string | null;
         };
         primary_assignee: {
           id: string;
           name: string | null;
           email: string;
           avatar_url: string | null;
+          nickname: string | null;
         } | null;
       })[],
       count,
@@ -291,8 +301,8 @@ export const tasksApi = {
       .select(
         `
         *,
-        creator:users!tasks_creator_id_fkey(id, name, email, avatar_url),
-        primary_assignee:users!tasks_primary_assignee_id_fkey(id, name, email, avatar_url)
+        creator:users!tasks_creator_id_fkey(id, name, email, avatar_url, nickname),
+        primary_assignee:users!tasks_primary_assignee_id_fkey(id, name, email, avatar_url, nickname)
       `,
         { count: "exact" }
       )
@@ -309,12 +319,14 @@ export const tasksApi = {
           name: string | null;
           email: string;
           avatar_url: string | null;
+          nickname: string | null;
         };
         primary_assignee: {
           id: string;
           name: string | null;
           email: string;
           avatar_url: string | null;
+          nickname: string | null;
         } | null;
       })[],
       count,
@@ -392,8 +404,8 @@ export const tasksApi = {
       .select(
         `
         *,
-        creator:users!tasks_creator_id_fkey(id, name, email, avatar_url),
-        primary_assignee:users!tasks_primary_assignee_id_fkey(id, name, email, avatar_url)
+        creator:users!tasks_creator_id_fkey(id, name, email, avatar_url, nickname),
+        primary_assignee:users!tasks_primary_assignee_id_fkey(id, name, email, avatar_url, nickname)
       `
       )
       .or(`title.ilike.%${query}%,description.ilike.%${query}%`)
@@ -407,12 +419,14 @@ export const tasksApi = {
         name: string | null;
         email: string;
         avatar_url: string | null;
+        nickname: string | null;
       };
       primary_assignee: {
         id: string;
         name: string | null;
         email: string;
         avatar_url: string | null;
+        nickname: string | null;
       } | null;
     })[];
   },

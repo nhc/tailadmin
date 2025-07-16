@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useTaskStateMachine } from "@/lib/hooks/useTaskStateMachine";
 import type { Task, TaskStatus, ClaimStatus } from "@/lib/db/api/types";
 import type { User } from "@/lib/db/api/types";
@@ -54,6 +55,8 @@ type TaskActionsProps = {
 export const TaskActions = ({ task, user, onAction, onTaskUpdated }: TaskActionsProps) => {
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const router = useRouter();
 
   if (!user) return null;
 
@@ -134,6 +137,7 @@ export const TaskActions = ({ task, user, onAction, onTaskUpdated }: TaskActions
       if (onTaskUpdated && result && "title" in result) {
         onTaskUpdated(result as Task);
       }
+      router.refresh();
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to perform action";
       setError(errorMessage);
@@ -142,7 +146,8 @@ export const TaskActions = ({ task, user, onAction, onTaskUpdated }: TaskActions
       setLoadingAction(null);
     }
   };
-
+  console.log("TaskActions availableActions", availableActions);
+  console.log("TaskActions validTransitions", validTransitions);
   if (availableActions.length === 0) {
     return null;
   }

@@ -48,7 +48,7 @@ export const TASK_STATES: Record<TaskState, TaskStateConfig> = {
     canBeDelivered: true,
     canBeCompleted: false,
     canBeDisputed: false,
-    canBeCancelled: true,
+    canBeCancelled: false,
   },
   inprogress: {
     state: "inprogress",
@@ -60,7 +60,7 @@ export const TASK_STATES: Record<TaskState, TaskStateConfig> = {
     canBeDelivered: true,
     canBeCompleted: false,
     canBeDisputed: false,
-    canBeCancelled: true,
+    canBeCancelled: false,
   },
   delivered: {
     state: "delivered",
@@ -96,7 +96,7 @@ export const TASK_STATES: Record<TaskState, TaskStateConfig> = {
     canBeDelivered: false,
     canBeCompleted: false,
     canBeDisputed: false,
-    canBeCancelled: false,
+    canBeCancelled: true,
   },
   cancelled: {
     state: "cancelled",
@@ -156,13 +156,7 @@ export const TASK_TRANSITIONS: TaskTransition[] = [
     description: "Coder pauses work on the task",
     action: "pause_work",
   },
-  {
-    from: "claimed",
-    to: "cancelled",
-    allowedRoles: ["viber", "coder", "admin", "superuser"],
-    description: "Task is cancelled",
-    action: "cancel",
-  },
+
   {
     from: "delivered",
     to: "completed",
@@ -290,9 +284,19 @@ export class TaskStateMachine {
   getStatusMessage(
     userRole: UserRole,
     isAssignee: boolean = false,
-    claimStatus?: ClaimStatus
+    claimStatus?: ClaimStatus,
+    coderInfo?: {
+      nickname: string | null;
+      name: string | null;
+    }
   ): string {
     const stateConfig = TASK_STATES[this.currentState];
+
+    // Helper function to get coder display name
+    const getCoderDisplayName = () => {
+      if (!coderInfo) return "a coder";
+      return coderInfo.nickname || coderInfo.name || "a coder";
+    };
 
     switch (this.currentState) {
       case "open":
@@ -309,14 +313,16 @@ export class TaskStateMachine {
           }
           return "You claimed this task";
         }
-        return userRole === "viber" ? "Task claimed by a coder" : "Task is in progress";
+        return userRole === "viber"
+          ? `Task claimed by ${getCoderDisplayName()}`
+          : "Task is in progress";
 
       case "inprogress":
         if (isAssignee) {
           return "You are working on this task";
         }
         return userRole === "viber"
-          ? "Task is actively being worked on by a coder"
+          ? `Task is actively being worked on by ${getCoderDisplayName()}`
           : "Task is in progress";
 
       case "delivered":
@@ -370,7 +376,7 @@ export class TaskStateMachine {
       if (this.canBeDisputed()) {
         actions.push("dispute");
       }
-      if (this.canBeCancelled()) {
+      if (this.currentState === "open" || this.currentState === "disputed") {
         actions.push("cancel");
       }
       // Admin can resolve disputes
@@ -418,10 +424,8 @@ export class TaskStateMachine {
       actions.push("dispute");
     }
 
-    if (this.canBeCancelled()) {
+    if (this.currentState === "open" || this.currentState === "disputed") {
       if (userRole === "viber") {
-        actions.push("cancel");
-      } else if (userRole === "coder" && isAssignee) {
         actions.push("cancel");
       }
     }

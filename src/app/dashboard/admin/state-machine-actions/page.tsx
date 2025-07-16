@@ -1,6 +1,6 @@
 "use client";
 
-import { TaskActions } from "@/components/_pages/dashboard/TaskActions";
+import { TaskActions } from "@/components/_pages/dashboard/tasks/TaskActions";
 import type { Task, User } from "@/lib/db/api/types";
 
 export default function StateMachineActionsPage() {
@@ -203,34 +203,22 @@ export default function StateMachineActionsPage() {
 
   return (
     <div className="p-6 space-y-8">
-      <h1 className="text-2xl font-bold mb-6">
-        Task Actions State Machine Demo
-      </h1>
+      <h1 className="text-2xl font-bold mb-6">Task Actions State Machine Demo</h1>
 
       {/* Admin User Scenarios */}
       <div className="space-y-6">
-        <h2 className="text-xl font-semibold text-blue-600">
-          Admin User Scenarios
-        </h2>
+        <h2 className="text-xl font-semibold text-blue-600">Admin User Scenarios</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="border rounded-lg p-4 bg-white dark:bg-gray-800">
             <h3 className="font-medium mb-2">Open Task (Admin View)</h3>
-            <p className="text-sm text-gray-600 mb-3">
-              {testTasks.openTask.title}
-            </p>
-            <TaskActions
-              task={testTasks.openTask}
-              user={testUsers.admin}
-              onAction={handleAction}
-            />
+            <p className="text-sm text-gray-600 mb-3">{testTasks.openTask.title}</p>
+            <TaskActions task={testTasks.openTask} user={testUsers.admin} onAction={handleAction} />
           </div>
 
           <div className="border rounded-lg p-4 bg-white dark:bg-gray-800">
             <h3 className="font-medium mb-2">Claimed Task (Admin View)</h3>
-            <p className="text-sm text-gray-600 mb-3">
-              {testTasks.claimedTask.title}
-            </p>
+            <p className="text-sm text-gray-600 mb-3">{testTasks.claimedTask.title}</p>
             <TaskActions
               task={testTasks.claimedTask}
               user={testUsers.admin}
@@ -240,9 +228,7 @@ export default function StateMachineActionsPage() {
 
           <div className="border rounded-lg p-4 bg-white dark:bg-gray-800">
             <h3 className="font-medium mb-2">Delivered Task (Admin View)</h3>
-            <p className="text-sm text-gray-600 mb-3">
-              {testTasks.deliveredTask.title}
-            </p>
+            <p className="text-sm text-gray-600 mb-3">{testTasks.deliveredTask.title}</p>
             <TaskActions
               task={testTasks.deliveredTask}
               user={testUsers.admin}
@@ -252,9 +238,7 @@ export default function StateMachineActionsPage() {
 
           <div className="border rounded-lg p-4 bg-white dark:bg-gray-800">
             <h3 className="font-medium mb-2">Disputed Task (Admin View)</h3>
-            <p className="text-sm text-gray-600 mb-3">
-              {testTasks.disputedTask.title}
-            </p>
+            <p className="text-sm text-gray-600 mb-3">{testTasks.disputedTask.title}</p>
             <TaskActions
               task={testTasks.disputedTask}
               user={testUsers.admin}
@@ -264,9 +248,7 @@ export default function StateMachineActionsPage() {
 
           <div className="border rounded-lg p-4 bg-white dark:bg-gray-800">
             <h3 className="font-medium mb-2">Completed Task (Admin View)</h3>
-            <p className="text-sm text-gray-600 mb-3">
-              {testTasks.completedTask.title}
-            </p>
+            <p className="text-sm text-gray-600 mb-3">{testTasks.completedTask.title}</p>
             <TaskActions
               task={testTasks.completedTask}
               user={testUsers.admin}
@@ -278,28 +260,18 @@ export default function StateMachineActionsPage() {
 
       {/* Viber User Scenarios */}
       <div className="space-y-6">
-        <h2 className="text-xl font-semibold text-green-600">
-          Viber User Scenarios
-        </h2>
+        <h2 className="text-xl font-semibold text-green-600">Viber User Scenarios</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="border rounded-lg p-4 bg-white dark:bg-gray-800">
             <h3 className="font-medium mb-2">Open Task (Viber View)</h3>
-            <p className="text-sm text-gray-600 mb-3">
-              {testTasks.openTask.title}
-            </p>
-            <TaskActions
-              task={testTasks.openTask}
-              user={testUsers.viber}
-              onAction={handleAction}
-            />
+            <p className="text-sm text-gray-600 mb-3">{testTasks.openTask.title}</p>
+            <TaskActions task={testTasks.openTask} user={testUsers.viber} onAction={handleAction} />
           </div>
 
           <div className="border rounded-lg p-4 bg-white dark:bg-gray-800">
             <h3 className="font-medium mb-2">Delivered Task (Viber View)</h3>
-            <p className="text-sm text-gray-600 mb-3">
-              {testTasks.deliveredTask.title}
-            </p>
+            <p className="text-sm text-gray-600 mb-3">{testTasks.deliveredTask.title}</p>
             <TaskActions
               task={testTasks.deliveredTask}
               user={testUsers.viber}
@@ -311,30 +283,18 @@ export default function StateMachineActionsPage() {
 
       {/* Coder User Scenarios */}
       <div className="space-y-6">
-        <h2 className="text-xl font-semibold text-purple-600">
-          Coder User Scenarios
-        </h2>
+        <h2 className="text-xl font-semibold text-purple-600">Coder User Scenarios</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="border rounded-lg p-4 bg-white dark:bg-gray-800">
             <h3 className="font-medium mb-2">Open Task (Coder View)</h3>
-            <p className="text-sm text-gray-600 mb-3">
-              {testTasks.openTask.title}
-            </p>
-            <TaskActions
-              task={testTasks.openTask}
-              user={testUsers.coder}
-              onAction={handleAction}
-            />
+            <p className="text-sm text-gray-600 mb-3">{testTasks.openTask.title}</p>
+            <TaskActions task={testTasks.openTask} user={testUsers.coder} onAction={handleAction} />
           </div>
 
           <div className="border rounded-lg p-4 bg-white dark:bg-gray-800">
-            <h3 className="font-medium mb-2">
-              Claimed Task (Coder View - As Assignee)
-            </h3>
-            <p className="text-sm text-gray-600 mb-3">
-              {testTasks.claimedTask.title}
-            </p>
+            <h3 className="font-medium mb-2">Claimed Task (Coder View - As Assignee)</h3>
+            <p className="text-sm text-gray-600 mb-3">{testTasks.claimedTask.title}</p>
             <TaskActions
               task={testTasks.claimedTask}
               user={testUsers.coder}
@@ -343,12 +303,8 @@ export default function StateMachineActionsPage() {
           </div>
 
           <div className="border rounded-lg p-4 bg-white dark:bg-gray-800">
-            <h3 className="font-medium mb-2">
-              Disputed Task (Coder View - As Assignee)
-            </h3>
-            <p className="text-sm text-gray-600 mb-3">
-              {testTasks.disputedTask.title}
-            </p>
+            <h3 className="font-medium mb-2">Disputed Task (Coder View - As Assignee)</h3>
+            <p className="text-sm text-gray-600 mb-3">{testTasks.disputedTask.title}</p>
             <TaskActions
               task={testTasks.disputedTask}
               user={testUsers.coder}
@@ -360,22 +316,12 @@ export default function StateMachineActionsPage() {
 
       {/* No User Scenario */}
       <div className="space-y-6">
-        <h2 className="text-xl font-semibold text-gray-600">
-          No User Scenario
-        </h2>
+        <h2 className="text-xl font-semibold text-gray-600">No User Scenario</h2>
 
         <div className="border rounded-lg p-4 bg-white dark:bg-gray-800">
-          <h3 className="font-medium mb-2">
-            Task with No User (Should Show Nothing)
-          </h3>
-          <p className="text-sm text-gray-600 mb-3">
-            {testTasks.openTask.title}
-          </p>
-          <TaskActions
-            task={testTasks.openTask}
-            user={null}
-            onAction={handleAction}
-          />
+          <h3 className="font-medium mb-2">Task with No User (Should Show Nothing)</h3>
+          <p className="text-sm text-gray-600 mb-3">{testTasks.openTask.title}</p>
+          <TaskActions task={testTasks.openTask} user={null} onAction={handleAction} />
         </div>
       </div>
     </div>

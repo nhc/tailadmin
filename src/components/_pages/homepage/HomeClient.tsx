@@ -1,50 +1,45 @@
 "use client";
 
-import { Button } from "@heroui/react";
 import Link from "next/link";
 
-import { useAuth } from "@/lib/hooks/useAuth";
+import { useUserContext } from "@/context/UserContext";
 import { ROUTES } from "@/config/routes";
 
 export const HomeClient = () => {
-  const { user, loading, isAuthenticated } = useAuth();
-
-  if (loading) {
-    return (
-      <div className="container mx-auto max-w-7xl">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <p>Loading...</p>
-        </div>
-      </div>
-    );
-  }
+  const { user } = useUserContext();
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[400px] text-center">
-      {isAuthenticated ? (
+      {user ? (
         <div className="space-y-4">
-          <h1 className="text-4xl font-bold">Welcome back, {user?.email}!</h1>
-          <p className="text-lg text-foreground">
+          <h1 className="text-4xl font-bold">Welcome back, {user.email}!</h1>
+          <p className="text-lg text-gray-600 dark:text-gray-400">
             You&apos;re logged in and ready to go.
           </p>
           <div className="flex gap-4 justify-center">
             <Link href={ROUTES.DASHBOARD.ROOT}>
-              <Button color="primary">Go to Dashboard</Button>
+              <button className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors duration-200">
+                Go to Dashboard
+              </button>
             </Link>
           </div>
         </div>
       ) : (
         <div className="space-y-4">
           <h1 className="text-4xl font-bold">Welcome to Last20</h1>
-          <p className="text-lg text-foreground">
+          <p className="text-lg text-gray-600 dark:text-gray-400">
             Please sign in to access your account.
           </p>
           <div className="flex gap-4 justify-center">
             <Link href={ROUTES.AUTH.LOGIN}>
-              <Button variant="bordered">Sign In</Button>
+              <button className="px-6 py-3 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-semibold rounded-lg transition-colors duration-200">
+                Sign In
+              </button>
             </Link>
-            <Link href={ROUTES.AUTH.SIGN_UP}>
-              <Button color="primary">Sign Up</Button>
+            <Link href={ROUTES.AUTH.SIGN_UP_VIBER}>
+              <button className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors duration-200">
+                Sign Up
+              </button>
             </Link>
           </div>
         </div>

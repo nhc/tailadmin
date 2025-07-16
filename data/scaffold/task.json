@@ -1,0 +1,15 @@
+{
+  "tasks": [
+    {
+      "title": "Fix Zapier webhook that's not triggering on Airtable updates",
+      "description": "I set up a Zapier automation to send Slack notifications when new leads are added to Airtable, but it's not working consistently. Sometimes it triggers, sometimes it doesn't. I've checked the webhook URL and the Zapier setup looks correct. Need someone to debug why the webhook isn't reliable and fix the automation.",
+      "tech_stack": ["Zapier", "Airtable", "Slack", "Webhooks"],
+      "price": 125.0,
+      "category": "api",
+      "links": {
+        "zapier_dashboard": "https://zapier.com/app/dashboard",
+        "airtable_base": "https://airtable.com/app/example"
+      }
+    }
+  ]
+}
