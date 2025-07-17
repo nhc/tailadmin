@@ -58,6 +58,44 @@ const TaskDetailsPage = () => {
   const [isSubmittingClaim, setIsSubmittingClaim] = useState(false);
   const [claimValidationError, setClaimValidationError] = useState<string | null>(null);
 
+  // Function to refetch task data
+  const refetchTask = async () => {
+    if (!taskId) return;
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const supabase = createClient();
+      const data = await tasksApi.getById(supabase, taskId);
+
+      if (!data) {
+        throw new Error("Task not found");
+      }
+
+      setTask(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to fetch task");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Function to handle task updates from actions
+  const handleTaskUpdated = (updatedTask: Task) => {
+    setTask((prev) => {
+      if (!prev) return null;
+      // Only update the basic task fields, keep the existing relations
+      return {
+        ...prev,
+        status: updatedTask.status,
+        primary_assignee_id: updatedTask.primary_assignee_id,
+        updated_at: updatedTask.updated_at,
+        status_timestamps: updatedTask.status_timestamps,
+      };
+    });
+  };
+
   // Set the active menu item based on task status
   const getActiveMenuPath = () => {
     if (!task) return "/dashboard/tasks/open";
@@ -162,6 +200,7 @@ const TaskDetailsPage = () => {
       alert(`Error: ${errorMessage}`);
     } finally {
       setIsSubmittingClaim(false);
+      refetchTask();
     }
   };
 
@@ -246,7 +285,7 @@ const TaskDetailsPage = () => {
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8">
           <TaskViewCard task={task} user={user} />
           {/* Action Buttons */}
-          {task.status === "open" && (
+          {task.status === "open" && !isViber && (
             <div className="mt-8 flex gap-4">
               <button
                 onClick={openModal}
@@ -271,7 +310,8 @@ const TaskDetailsPage = () => {
                 isViber={isViber}
                 isCoder={isCoder}
                 context="view"
-                onTaskUpdated={() => {}}
+                onTaskUpdated={handleTaskUpdated}
+                refetchTask={refetchTask}
               />
             </div>
           )}

@@ -41,7 +41,7 @@ const navItems: NavItem[] = [
     name: "Tasks / Jobs",
     isMenuOpen: true,
     subItems: [
-      // { name: "Open", path: "/dashboard/tasks/open", pro: false },
+      { name: "Open", path: "/dashboard/tasks/open", pro: false },
       { name: "Claimed by Coder", path: "/dashboard/tasks/claimed", pro: false },
       { name: "In Progress", path: "/dashboard/tasks/inprogress", pro: false },
       { name: "Delivered", path: "/dashboard/tasks/delivered", pro: false },

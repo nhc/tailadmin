@@ -48,6 +48,13 @@ export default function UserInfoCard({ user }: UserInfoCardProps) {
               {user.bio || "Please add a bio to your profile"}
             </p>
           </div>
+
+          <div>
+            <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">Currency</p>
+            <p className="text-sm font-medium text-gray-800 dark:text-white/90">
+              {user.currency || "GBP"}
+            </p>
+          </div>
         </div>
       </div>
     </div>

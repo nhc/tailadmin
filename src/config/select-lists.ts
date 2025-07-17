@@ -51,7 +51,44 @@ export const commonTechStack = [
   "GitLab",
 ];
 
+export const techStackByCategory = {
+  "platform-tools": [
+    "Airtable",
+    "Bubble",
+    "Figma",
+    "Framer",
+    "Make",
+    "Notion",
+    "Shopify",
+    "Stripe",
+    "Webflow",
+    "Zapier",
+  ],
+  "frontend-frameworks": ["Angular", "Next.js", "React", "Vue.js"],
+  "backend-frameworks": ["Django", "Flask", "Laravel", "Node.js", "Ruby on Rails", "Spring Boot"],
+  "programming-languages": [
+    "C#",
+    "Go",
+    "Java",
+    "JavaScript",
+    "PHP",
+    "Python",
+    "Rust",
+    "TypeScript",
+  ],
+  styling: ["Bootstrap", "HTML/CSS", "Tailwind CSS"],
+  databases: ["MongoDB", "MySQL", "PostgreSQL", "Redis"],
+  "cloud-platforms": ["AWS", "Azure", "Firebase", "Google Cloud", "Supabase"],
+  "devops-tools": ["Docker", "Git", "GitHub", "GitLab", "Kubernetes"],
+};
+
 export const commonBudgets = ["0-50", "50-100", "100-150", "150-200", "200+"];
+export const createTaskFormBudgets = [
+  { label: "50", value: "5000" },
+  { label: "100", value: "10000" },
+  { label: "150", value: "15000" },
+  { label: "200", value: "20000" },
+];
 
 export const commonTools = [
   "All tools",
@@ -86,4 +123,10 @@ export const timezones = [
   { code: "IST", value: "Asia/Jerusalem" },
   { code: "GST", value: "Asia/Dubai" },
   { code: "SGT", value: "Asia/Singapore" },
+];
+
+export const userCurrencies = [
+  { code: "GBP", value: "GBP", name: "British Pound", symbol: "£" },
+  { code: "USD", value: "USD", name: "United States Dollar", symbol: "$" },
+  { code: "EUR", value: "EUR", name: "Euro", symbol: "€" },
 ];

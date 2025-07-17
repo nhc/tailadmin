@@ -37,6 +37,7 @@ export type User = {
   nickname: string | null;
   timezone: string | null;
   location: string | null;
+  currency: string;
   created_at: string;
   updated_at: string;
 };
@@ -49,6 +50,7 @@ export type Task = {
   price: number;
   category: string;
   links: Record<string, unknown> | null;
+  code_link: string | null;
   creator_id: string;
   primary_assignee_id: string | null;
   is_private: boolean;

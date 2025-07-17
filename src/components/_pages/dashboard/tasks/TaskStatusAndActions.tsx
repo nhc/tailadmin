@@ -15,6 +15,7 @@ export const TaskStatusAndActions = ({
   isCoder,
   context,
   onTaskUpdated,
+  refetchTask,
 }: {
   task: TaskWithRelations;
   user: User;
@@ -22,6 +23,7 @@ export const TaskStatusAndActions = ({
   isCoder: boolean;
   context: "dashboard" | "view"; // dashboard is for the user tasks view, view is for the task view page
   onTaskUpdated?: (updatedTask: Task) => void;
+  refetchTask?: () => Promise<void>;
 }) => {
   const [showMessage, setShowMessage] = useState(false);
   const router = useRouter();
@@ -141,6 +143,7 @@ export const TaskStatusAndActions = ({
             user={user}
             onAction={handleAction}
             onTaskUpdated={onTaskUpdated}
+            refetchTask={refetchTask}
           />
         </div>
       </div>

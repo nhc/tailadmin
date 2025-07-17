@@ -8,7 +8,7 @@ import Label from "@/components/form/Label";
 import Select from "@/components/form/Select";
 import Input from "@/components/form/input/InputField";
 import { PencilIcon } from "lucide-react";
-import { timezones } from "@/config/select-lists";
+import { timezones, userCurrencies } from "@/config/select-lists";
 import type { User } from "@/lib/db/api/types";
 import { updateUserProfile } from "@/lib/actions/profile";
 
@@ -23,6 +23,7 @@ export const EditProfileModal = ({ user }: EditProfileModalProps) => {
   const [nicknameValue, setNicknameValue] = useState<string | null>(null);
   const [timezoneValue, setTimezoneValue] = useState<string | null>(null);
   const [locationValue, setLocationValue] = useState<string | null>(null);
+  const [currencyValue, setCurrencyValue] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
   const handleSave = async () => {
@@ -33,6 +34,7 @@ export const EditProfileModal = ({ user }: EditProfileModalProps) => {
         nickname: nicknameValue,
         timezone: timezoneValue,
         location: locationValue,
+        currency: currencyValue || "GBP",
       });
 
       closeModal();
@@ -54,12 +56,18 @@ export const EditProfileModal = ({ user }: EditProfileModalProps) => {
       setNicknameValue(user.nickname || "");
       setTimezoneValue(user.timezone || "");
       setLocationValue(user.location || "");
+      setCurrencyValue(user.currency || "GBP");
     }
   }, [user]);
 
   const timezoneOptions = timezones.map((tz) => ({
     value: tz.value,
     label: `${tz.code} (${tz.value})`,
+  }));
+
+  const currencyOptions = userCurrencies.map((curr) => ({
+    value: curr.value,
+    label: `${curr.symbol} ${curr.name} (${curr.code})`,
   }));
 
   return (
@@ -121,6 +129,16 @@ export const EditProfileModal = ({ user }: EditProfileModalProps) => {
                 placeholder="Select your timezone"
                 onChange={(value) => setTimezoneValue(value)}
                 defaultValue={timezoneValue || ""}
+              />
+            </div>
+
+            <div className="mb-6">
+              <Label>Currency</Label>
+              <Select
+                options={currencyOptions}
+                placeholder="Select your currency"
+                onChange={(value) => setCurrencyValue(value)}
+                defaultValue={currencyValue || ""}
               />
             </div>
           </div>

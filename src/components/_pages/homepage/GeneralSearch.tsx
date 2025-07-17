@@ -166,10 +166,10 @@ export default function GeneralSearch({
   };
 
   return (
-    <section className="bg-gray-50 dark:bg-gray-900 py-12">
+    <section className=" py-12">
       <div className="container mx-auto px-4">
         {/* Search Header */}
-        <div className="text-center mb-8">
+        <div className="text-start mb-8">
           <h2 className="text-3xl font-bold text-gray-800 dark:text-white mb-4">
             Help out a viber and start earning
           </h2>

@@ -13,17 +13,13 @@ export default function Search() {
     <div>
       <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">
         <h2 className="mr-2">Search</h2>
-        <p className="text-sm">
+        {/* <p className="text-sm">
           This feature is coming soon. All the tasks and jobs will be searchable
           here.
-        </p>
+        </p> */}
 
         <div className="space-y-6 mt-6">
-          <GeneralSearch
-            showSearch={false}
-            showAllOpenTasks={true}
-            context="dashboard"
-          />
+          <GeneralSearch showSearch={false} showAllOpenTasks={true} context="dashboard" />
         </div>
       </div>
     </div>

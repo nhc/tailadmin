@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 
-import tasksData from "./task.json";
+import tasksData from "./tasks.json";
 
 // Note: Prices in the JSON files are now stored as integers (in cents/pence)
 // e.g., 12500 = $125.00, 17500 = $175.00

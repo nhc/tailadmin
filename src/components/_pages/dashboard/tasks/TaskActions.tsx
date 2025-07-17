@@ -52,9 +52,16 @@ type TaskActionsProps = {
   user: User | null;
   onAction: (action: string, taskId: string) => void;
   onTaskUpdated?: (updatedTask: Task) => void;
+  refetchTask?: () => Promise<void>;
 };
 
-export const TaskActions = ({ task, user, onAction, onTaskUpdated }: TaskActionsProps) => {
+export const TaskActions = ({
+  task,
+  user,
+  onAction,
+  onTaskUpdated,
+  refetchTask,
+}: TaskActionsProps) => {
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const {
@@ -259,7 +266,6 @@ export const TaskActions = ({ task, user, onAction, onTaskUpdated }: TaskActions
 
               const statusResult = await statusResponse.json();
 
-              console.log("[claim-check-status] statusResult", statusResult);
               // Handle setup requirements
               if (statusResult.type === "setup_required") {
                 // Check if Stripe Connect setup is needed
@@ -272,26 +278,10 @@ export const TaskActions = ({ task, user, onAction, onTaskUpdated }: TaskActions
                 // You might want to handle this case differently - perhaps redirect to payment setup
                 //
                 startStripeCheckout(userClaim.id);
-                //throw new Error(statusResult.checks.stripe_task_payment.message);
               }
 
-              // If ready to approve, proceed with the actual approval
-              // const response = await fetch("/api/tasks/approve-claim", {
-              //   method: "POST",
-              //   headers: {
-              //     "Content-Type": "application/json",
-              //   },
-              //   body: JSON.stringify({
-              //     claimId: userClaim.id,
-              //   }),
-              // });
-
-              // if (!response.ok) {
-              //   const errorData = await response.json();
-              //   throw new Error(errorData.error || "Failed to approve claim");
-              // }
-
-              // result = await response.json();
+              // NOTE: The claim is updated in the backend after the checkout is completed
+              // where it should be
             } catch (error) {
               console.error("approveClaim error:", error);
               throw error;
@@ -310,11 +300,14 @@ export const TaskActions = ({ task, user, onAction, onTaskUpdated }: TaskActions
       // Call the parent callback
       onAction(action, taskId);
 
-      // Call the optional callback with updated task (only for task actions, not claim actions)
+      // Call the optional callback with updated task (only for task actions that return a task object)
       if (onTaskUpdated && result && typeof result === "object" && "title" in result) {
         onTaskUpdated(result as Task);
       }
-      router.refresh();
+
+      // Always refetch the task data to ensure we have the latest state
+      // This is especially important for claim actions that don't return task data
+      await refetchTask?.();
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to perform action";
       setError(errorMessage);
