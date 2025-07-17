@@ -92,8 +92,8 @@ export const POST = async (request: NextRequest) => {
           application_fee_amount: Math.round(pricing_calculation.platformFee), // Convert platform fee to smallest unit
         },
         mode: "payment",
-        success_url: `${origin}/dashboard/tasks/view/${finalTaskId}?success=true`,
-        cancel_url: `${origin}/dashboard/tasks/view/${finalTaskId}?canceled=true`,
+        success_url: `${origin}/dashboard/tasks/view/${finalTaskId}?checkout_success=true`,
+        cancel_url: `${origin}/dashboard/tasks/view/${finalTaskId}?checkout_canceled=true`,
       },
       {
         stripeAccount: stripeConnectedAccountId,

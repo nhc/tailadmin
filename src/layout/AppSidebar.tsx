@@ -64,7 +64,7 @@ const navItems: NavItem[] = [
     name: "Your Tasks / Jobs",
     subItems: [
       {
-        name: "Claimed by Viber",
+        name: "Claimed not accepted",
         path: "/dashboard/tasks/claimed",
         pro: false,
       },

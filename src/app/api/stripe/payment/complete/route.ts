@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import { ClaimStatus, PaymentStatus, TaskStatus } from "@/lib/db/api/types";
 import { tasksApi } from "@/lib/db/api/tasks";
 import { claimsApi } from "@/lib/db/api/claims";
+import { auditTrailApi } from "@/lib/db/api/audit-trail";
 
 export const GET = async (request: NextRequest) => {
   return NextResponse.json({ message: "Stripe payment complete API endpoint unprotected" });
@@ -36,6 +37,23 @@ const processPaymentCompletion = async (checkoutSession: Stripe.Checkout.Session
       return;
     }
 
+    // Audit trail: Payment processed
+    await auditTrailApi.logAction(
+      supabase,
+      "payment_processed",
+      "payment",
+      payment.id,
+      payment.viber_id, // The viber who initiated the payment
+      {
+        stripe_checkout_session_id: checkoutSession.id,
+        stripe_payment_intent_id: checkoutSession.payment_intent,
+        amount: checkoutSession.amount_total,
+        currency: checkoutSession.currency,
+        status: "held",
+        action: "checkout_completed",
+      }
+    );
+
     // Change the task status to "in progress"
     const task = await tasksApi.getById(supabase, payment.task_id);
     if (!task) {
@@ -47,10 +65,47 @@ const processPaymentCompletion = async (checkoutSession: Stripe.Checkout.Session
       status: "inprogress" as TaskStatus,
     });
 
+    if (updatedTask) {
+      // Audit trail: Task status changed to in progress
+      await auditTrailApi.logAction(
+        supabase,
+        "task_inprogress",
+        "task",
+        task.id,
+        payment.viber_id, // The viber who initiated the payment
+        {
+          trigger: "payment_completed",
+          payment_id: payment.id,
+          stripe_checkout_session_id: checkoutSession.id,
+          from_status: task.status,
+          to_status: "inprogress",
+        }
+      );
+    }
+
     if (payment.claim_id && updatedTask) {
-      await claimsApi.update(supabase, payment.claim_id, {
+      const updatedClaim = await claimsApi.update(supabase, payment.claim_id, {
         status: "approved" as ClaimStatus,
       });
+
+      if (updatedClaim) {
+        // Audit trail: Claim approved
+        await auditTrailApi.logAction(
+          supabase,
+          "claim_approved",
+          "claim",
+          payment.claim_id,
+          payment.viber_id, // The viber who initiated the payment
+          {
+            trigger: "payment_completed",
+            payment_id: payment.id,
+            task_id: task.id,
+            stripe_checkout_session_id: checkoutSession.id,
+            from_status: "pending",
+            to_status: "approved",
+          }
+        );
+      }
     }
   } catch (error) {
     console.error("[checkout.session.completed] Error processing payment completion:", error);
@@ -87,18 +142,6 @@ export const POST = async (request: NextRequest) => {
 
   // Handle the event
   switch (event.type) {
-    case "payment_intent.succeeded":
-      const paymentIntent = event.data.object as Stripe.PaymentIntent;
-      console.log(`PaymentIntent for ${paymentIntent.amount} was successful!`);
-      // TODO: Implement payment intent success handling
-      // handlePaymentIntentSucceeded(paymentIntent);
-      break;
-    case "payment_method.attached":
-      const paymentMethod = event.data.object as Stripe.PaymentMethod;
-      console.log(`PaymentMethod ${paymentMethod.id} was attached!`);
-      // TODO: Implement payment method attachment handling
-      // handlePaymentMethodAttached(paymentMethod);
-      break;
     case "checkout.session.completed":
       const checkoutSession = event.data.object as Stripe.Checkout.Session;
       console.log(`CheckoutSession for ${checkoutSession.amount_total} was successful!`);
