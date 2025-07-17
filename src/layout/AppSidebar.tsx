@@ -76,153 +76,153 @@ const navItems: NavItem[] = [
     ],
   },
 
-  {
-    for: "admin",
-    icon: <GridIcon />,
-    name: "Dashboard",
-    subItems: [
-      { name: "Ecommerce", path: "/", pro: false },
-      { name: "Analytics", path: "/analytics", pro: true },
-      { name: "Marketing", path: "/marketing", pro: true },
-      { name: "CRM", path: "/crm", pro: true },
-      { name: "Stocks", path: "/stocks", new: true, pro: true },
-      { name: "SaaS", path: "/saas", new: true, pro: true },
-    ],
-  },
-  {
-    for: "admin",
-    icon: <CalenderIcon />,
-    name: "Calendar",
-    path: "/calendar",
-  },
-  {
-    for: "admin",
-    icon: <UserCircleIcon />,
-    name: "User Profile",
-    path: "/profile",
-  },
-  {
-    for: "admin",
-    name: "Task",
-    icon: <TaskIcon />,
-    subItems: [
-      { name: "List", path: "/task-list", pro: true },
-      { name: "Kanban", path: "/task-kanban", pro: true },
-    ],
-  },
-  {
-    for: "admin",
-    name: "Forms",
-    icon: <ListIcon />,
-    subItems: [
-      { name: "Form Elements", path: "/form-elements", pro: false },
-      { name: "Form Layout", path: "/form-layout", pro: true },
-    ],
-  },
-  {
-    for: "admin",
-    name: "Tables",
-    icon: <TableIcon />,
-    subItems: [
-      { name: "Basic Tables", path: "/basic-tables", pro: false },
-      { name: "Data Tables", path: "/data-tables", pro: true },
-    ],
-  },
-  {
-    for: "admin",
-    name: "Pages",
-    icon: <PageIcon />,
-    subItems: [
-      { name: "File Manager", path: "/file-manager", pro: true },
-      { name: "Pricing Tables", path: "/pricing-tables", pro: true },
-      { name: "Faqs", path: "/faq", pro: true },
-      { name: "Blank Page", path: "/blank", pro: true },
-      { name: "404 Error", path: "/error-404", pro: true },
-      { name: "500 Error", path: "/error-500", pro: true },
-      { name: "503 Error", path: "/error-503", pro: true },
-      { name: "Coming Soon", path: "/coming-soon", pro: true },
-      { name: "Maintenance", path: "/maintenance", pro: true },
-      { name: "Success", path: "/success", pro: true },
-    ],
-  },
+  // {
+  //   for: "admin",
+  //   icon: <GridIcon />,
+  //   name: "Dashboard",
+  //   subItems: [
+  //     { name: "Ecommerce", path: "/", pro: false },
+  //     { name: "Analytics", path: "/analytics", pro: true },
+  //     { name: "Marketing", path: "/marketing", pro: true },
+  //     { name: "CRM", path: "/crm", pro: true },
+  //     { name: "Stocks", path: "/stocks", new: true, pro: true },
+  //     { name: "SaaS", path: "/saas", new: true, pro: true },
+  //   ],
+  // },
+  // {
+  //   for: "admin",
+  //   icon: <CalenderIcon />,
+  //   name: "Calendar",
+  //   path: "/calendar",
+  // },
+  // {
+  //   for: "admin",
+  //   icon: <UserCircleIcon />,
+  //   name: "User Profile",
+  //   path: "/profile",
+  // },
+  // {
+  //   for: "admin",
+  //   name: "Task",
+  //   icon: <TaskIcon />,
+  //   subItems: [
+  //     { name: "List", path: "/task-list", pro: true },
+  //     { name: "Kanban", path: "/task-kanban", pro: true },
+  //   ],
+  // },
+  // {
+  //   for: "admin",
+  //   name: "Forms",
+  //   icon: <ListIcon />,
+  //   subItems: [
+  //     { name: "Form Elements", path: "/form-elements", pro: false },
+  //     { name: "Form Layout", path: "/form-layout", pro: true },
+  //   ],
+  // },
+  // {
+  //   for: "admin",
+  //   name: "Tables",
+  //   icon: <TableIcon />,
+  //   subItems: [
+  //     { name: "Basic Tables", path: "/basic-tables", pro: false },
+  //     { name: "Data Tables", path: "/data-tables", pro: true },
+  //   ],
+  // },
+  // {
+  //   for: "admin",
+  //   name: "Pages",
+  //   icon: <PageIcon />,
+  //   subItems: [
+  //     { name: "File Manager", path: "/file-manager", pro: true },
+  //     { name: "Pricing Tables", path: "/pricing-tables", pro: true },
+  //     { name: "Faqs", path: "/faq", pro: true },
+  //     { name: "Blank Page", path: "/blank", pro: true },
+  //     { name: "404 Error", path: "/error-404", pro: true },
+  //     { name: "500 Error", path: "/error-500", pro: true },
+  //     { name: "503 Error", path: "/error-503", pro: true },
+  //     { name: "Coming Soon", path: "/coming-soon", pro: true },
+  //     { name: "Maintenance", path: "/maintenance", pro: true },
+  //     { name: "Success", path: "/success", pro: true },
+  //   ],
+  // },
 ];
 
 const othersItems: NavItem[] = [
-  {
-    icon: <PieChartIcon />,
-    name: "Charts",
-    subItems: [
-      { name: "Line Chart", path: "/line-chart", pro: true },
-      { name: "Bar Chart", path: "/bar-chart", pro: true },
-      { name: "Pie Chart", path: "/pie-chart", pro: true },
-    ],
-  },
-  {
-    icon: <BoxCubeIcon />,
-    name: "UI Elements",
-    subItems: [
-      { name: "Alerts", path: "/alerts", pro: true },
-      { name: "Avatar", path: "/avatars", pro: true },
-      { name: "Badge", path: "/badge", pro: true },
-      { name: "Breadcrumb", path: "/breadcrumb", pro: true },
-      { name: "Buttons", path: "/buttons", pro: true },
-      { name: "Buttons Group", path: "/buttons-group", pro: true },
-      { name: "Cards", path: "/cards", pro: true },
-      { name: "Carousel", path: "/carousel", pro: true },
-      { name: "Dropdowns", path: "/dropdowns", pro: true },
-      { name: "Images", path: "/images", pro: true },
-      { name: "Links", path: "/links", pro: true },
-      { name: "List", path: "/list", pro: true },
-      { name: "Modals", path: "/modals", pro: true },
-      { name: "Notification", path: "/notifications", pro: true },
-      { name: "Pagination", path: "/pagination", pro: true },
-      { name: "Popovers", path: "/popovers", pro: true },
-      { name: "Progressbar", path: "/progress-bar", pro: true },
-      { name: "Ribbons", path: "/ribbons", pro: true },
-      { name: "Spinners", path: "/spinners", pro: true },
-      { name: "Tabs", path: "/tabs", pro: true },
-      { name: "Tooltips", path: "/tooltips", pro: true },
-      { name: "Videos", path: "/videos", pro: true },
-    ],
-  },
-  {
-    icon: <PlugInIcon />,
-    name: "Authentication",
-    subItems: [
-      { name: "Sign In", path: "/signin", pro: false },
-      { name: "Sign Up", path: "/signup", pro: false },
-      { name: "Reset Password", path: "/reset-password", pro: true },
-      {
-        name: "Two Step Verification",
-        path: "/two-step-verification",
-        pro: true,
-      },
-    ],
-  },
+  // {
+  //   icon: <PieChartIcon />,
+  //   name: "Charts",
+  //   subItems: [
+  //     { name: "Line Chart", path: "/line-chart", pro: true },
+  //     { name: "Bar Chart", path: "/bar-chart", pro: true },
+  //     { name: "Pie Chart", path: "/pie-chart", pro: true },
+  //   ],
+  // },
+  // {
+  //   icon: <BoxCubeIcon />,
+  //   name: "UI Elements",
+  //   subItems: [
+  //     { name: "Alerts", path: "/alerts", pro: true },
+  //     { name: "Avatar", path: "/avatars", pro: true },
+  //     { name: "Badge", path: "/badge", pro: true },
+  //     { name: "Breadcrumb", path: "/breadcrumb", pro: true },
+  //     { name: "Buttons", path: "/buttons", pro: true },
+  //     { name: "Buttons Group", path: "/buttons-group", pro: true },
+  //     { name: "Cards", path: "/cards", pro: true },
+  //     { name: "Carousel", path: "/carousel", pro: true },
+  //     { name: "Dropdowns", path: "/dropdowns", pro: true },
+  //     { name: "Images", path: "/images", pro: true },
+  //     { name: "Links", path: "/links", pro: true },
+  //     { name: "List", path: "/list", pro: true },
+  //     { name: "Modals", path: "/modals", pro: true },
+  //     { name: "Notification", path: "/notifications", pro: true },
+  //     { name: "Pagination", path: "/pagination", pro: true },
+  //     { name: "Popovers", path: "/popovers", pro: true },
+  //     { name: "Progressbar", path: "/progress-bar", pro: true },
+  //     { name: "Ribbons", path: "/ribbons", pro: true },
+  //     { name: "Spinners", path: "/spinners", pro: true },
+  //     { name: "Tabs", path: "/tabs", pro: true },
+  //     { name: "Tooltips", path: "/tooltips", pro: true },
+  //     { name: "Videos", path: "/videos", pro: true },
+  //   ],
+  // },
+  // {
+  //   icon: <PlugInIcon />,
+  //   name: "Authentication",
+  //   subItems: [
+  //     { name: "Sign In", path: "/signin", pro: false },
+  //     { name: "Sign Up", path: "/signup", pro: false },
+  //     { name: "Reset Password", path: "/reset-password", pro: true },
+  //     {
+  //       name: "Two Step Verification",
+  //       path: "/two-step-verification",
+  //       pro: true,
+  //     },
+  //   ],
+  // },
 ];
 
 const supportItems: NavItem[] = [
-  {
-    for: "admin",
-    icon: <ChatIcon />,
-    name: "Chat",
-    path: "/chat",
-  },
-  {
-    for: "admin",
-    icon: <MailIcon />,
-    name: "Email",
-    subItems: [
-      { name: "Inbox", path: "/inbox" },
-      { name: "Details", path: "/inbox-details" },
-    ],
-  },
-  {
-    for: "admin",
-    icon: <DocsIcon />,
-    name: "Invoice",
-    path: "/invoice",
-  },
+  // {
+  //   for: "admin",
+  //   icon: <ChatIcon />,
+  //   name: "Chat",
+  //   path: "/chat",
+  // },
+  // {
+  //   for: "admin",
+  //   icon: <MailIcon />,
+  //   name: "Email",
+  //   subItems: [
+  //     { name: "Inbox", path: "/inbox" },
+  //     { name: "Details", path: "/inbox-details" },
+  //   ],
+  // },
+  // {
+  //   for: "admin",
+  //   icon: <DocsIcon />,
+  //   name: "Invoice",
+  //   path: "/invoice",
+  // },
 ];
 
 const AppSidebar: React.FC = () => {
@@ -455,7 +455,7 @@ const AppSidebar: React.FC = () => {
               </h2>
               {renderMenuItems(supportItems, "support")}
             </div>
-            <div>
+            {/* <div>
               <h2
                 className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
                   !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
@@ -464,7 +464,7 @@ const AppSidebar: React.FC = () => {
                 {isExpanded || isHovered || isMobileOpen ? "Others" : <HorizontaLDots />}
               </h2>
               {renderMenuItems(othersItems, "others")}
-            </div>
+            </div> */}
           </div>
         </nav>
       </div>
