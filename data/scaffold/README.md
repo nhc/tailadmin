@@ -52,6 +52,16 @@ The script will create:
 4. **Fix image upload functionality** - $125
 5. **Implement real-time notifications** - $225
 
+## Data Format
+
+**Prices are stored as integers** in the smallest currency unit (e.g., cents for USD, pence for GBP):
+
+- `15000` = $150.00
+- `20000` = $200.00
+- `17500` = $175.00
+
+This matches the database schema where `tasks.price` is stored as an INTEGER column.
+
 ## Manual Execution
 
 If you prefer to run the script manually:

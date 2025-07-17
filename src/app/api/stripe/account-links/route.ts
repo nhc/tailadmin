@@ -10,8 +10,8 @@ export const POST = async (request: NextRequest) => {
 
   try {
     const origin = request.headers.get("origin");
-    const refreshUrl = `${origin}/refresh/${accountId}`;
-    const returnUrl = `${origin}/return/${accountId}`;
+    const refreshUrl = `${origin}/stripe/refresh/${accountId}`;
+    const returnUrl = `${origin}/stripe/return/${accountId}`;
 
     const accountLink = await stripe.accountLinks.create({
       account: accountId,

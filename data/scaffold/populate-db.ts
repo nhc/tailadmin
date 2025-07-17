@@ -2,6 +2,9 @@ import { createClient } from "@supabase/supabase-js";
 
 import tasksData from "./task.json";
 
+// Note: Prices in the JSON files are now stored as integers (in cents/pence)
+// e.g., 12500 = $125.00, 17500 = $175.00
+
 const TARGET_USER_ID = "8e36b017-e099-417e-88a1-3f5d2aea5d49";
 
 // Get environment variables
@@ -85,7 +88,7 @@ const populateDatabase = async () => {
         continue;
       }
 
-      console.log(`✅ Inserted task: ${task.title} ($${task.price})`);
+      console.log(`✅ Inserted task: ${task.title} ($${(task.price / 100).toFixed(2)})`);
 
       // Add audit trail for task creation
       await supabase.from("audit_trail").insert({
@@ -96,6 +99,7 @@ const populateDatabase = async () => {
         metadata: {
           title: task.title,
           price: task.price,
+          price_display: (task.price / 100).toFixed(2),
           category: task.category,
           tech_stack: task.tech_stack,
           source: "populate_script",

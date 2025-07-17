@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import ActionCards from "@/components/_pages/dashboard/ActionCards";
+import { StripeAccountUpdate } from "@/components/_pages/dashboard/StripeAccountUpdate";
 import { useServerUser } from "@/lib/hooks/useServerUser";
 
 export default async function Dashboard() {
@@ -27,6 +28,12 @@ export default async function Dashboard() {
           </div>
         )}
       </div>
+
+      {/* Add Stripe Account Update component */}
+      <div className="mt-6">
+        <StripeAccountUpdate hasStripeAccount={!!userData?.stripe_account_id} />
+      </div>
+
       <ActionCards />
     </section>
   );

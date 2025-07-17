@@ -91,6 +91,10 @@ export type Payment = {
   updated_at: string;
   refunded_at: string | null;
   disputed_at: string | null;
+  stripe_checkout_session_id: string | null;
+  claim_id: string | null;
+  currency: string;
+  checkout_completed: boolean;
 };
 
 export type Attachment = {

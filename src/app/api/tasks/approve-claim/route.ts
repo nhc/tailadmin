@@ -1,18 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 
-// Helper function to check if user needs Stripe Connect setup
-const checkStripeConnectSetup = (user: any) => {
-  if (user.stripe_account_id) {
-    return { needsSetup: false };
-  }
-
-  return {
-    needsSetup: true,
-    message: "Please complete Stripe Connect setup to approve claims",
-  };
-};
-
 export const POST = async (request: NextRequest) => {
   try {
     const { claimId } = await request.json();
@@ -29,25 +17,15 @@ export const POST = async (request: NextRequest) => {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
 
-    // Get user info to check if they're a viber and their Stripe status
+    // Get user info to check if they're a viber
     const userResult = await supabase
       .from("users")
-      .select("role, stripe_account_id, email")
+      .select("role")
       .eq("id", session.user.id)
       .single();
 
     if (!userResult.data || userResult.data.role !== "viber") {
       return NextResponse.json({ error: "Only viber users can approve claims" }, { status: 403 });
-    }
-
-    // Check Stripe Connect setup
-    const stripeSetup = checkStripeConnectSetup(userResult.data);
-
-    if (stripeSetup.needsSetup) {
-      return NextResponse.json({
-        type: "stripe_setup_required",
-        message: stripeSetup.message,
-      });
     }
 
     // Get the claim to find the task ID

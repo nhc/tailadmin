@@ -1,8 +1,11 @@
 export const formatPrice = (price: number) => {
+  // Convert from cents to dollars (price is stored as integer in smallest currency unit)
+  const priceInDollars = price / 100;
+
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
-  }).format(price);
+  }).format(priceInDollars);
 };
 
 export const formatDate = (dateString: string) => {

@@ -5,5 +5,5 @@ export default async function ReturnPage({ params }: { params: { accountId: stri
   // TODO: Add logic to verify account status and update user onboarding
 
   // Redirect back to dashboard
-  redirect("/dashboard");
+  redirect("/dashboard?return=true");
 }

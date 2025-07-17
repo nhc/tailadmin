@@ -5,5 +5,5 @@ export default async function RefreshPage({ params }: { params: { accountId: str
   // TODO: Add logic to create new account link and redirect back to Stripe
 
   // Redirect back to dashboard
-  redirect("/dashboard");
+  redirect("/dashboard?refresh=true");
 }

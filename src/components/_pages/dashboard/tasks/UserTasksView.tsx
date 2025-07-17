@@ -9,6 +9,7 @@ import { useTaskStateMachine } from "@/lib/hooks/useTaskStateMachine";
 import Link from "next/link";
 import { TaskActions } from "./TaskActions";
 import { useRouter } from "next/navigation";
+import { formatDate, formatPrice } from "@/lib/utils/date-numbers";
 
 // Task Status Message Component
 export const TaskStatusMessage = ({
@@ -195,21 +196,6 @@ export const UserTasksView = ({
       color: getStatusColor(status),
       tasks,
     }));
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  };
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(price);
   };
 
   if (loading) {

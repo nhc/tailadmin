@@ -1,10 +1,5 @@
 import { SupabaseClient } from "@supabase/supabase-js";
-import type {
-  Payment,
-  InsertPayment,
-  UpdatePayment,
-  PaymentStatus,
-} from "./types";
+import type { Payment, InsertPayment, UpdatePayment, PaymentStatus } from "./types";
 
 export const paymentsApi = {
   // Get payment by ID
@@ -91,12 +86,7 @@ export const paymentsApi = {
   },
 
   // Get payments by status
-  getByStatus: async (
-    supabase: SupabaseClient,
-    status: PaymentStatus,
-    page = 1,
-    limit = 50
-  ) => {
+  getByStatus: async (supabase: SupabaseClient, status: PaymentStatus, page = 1, limit = 50) => {
     const from = (page - 1) * limit;
     const to = from + limit - 1;
 
@@ -128,22 +118,14 @@ export const paymentsApi = {
 
   // Create new payment
   create: async (supabase: SupabaseClient, payment: InsertPayment) => {
-    const { data, error } = await supabase
-      .from("payments")
-      .insert(payment)
-      .select()
-      .single();
+    const { data, error } = await supabase.from("payments").insert(payment).select().single();
 
     if (error) throw error;
     return data as Payment;
   },
 
   // Update payment
-  update: async (
-    supabase: SupabaseClient,
-    id: string,
-    updates: UpdatePayment
-  ) => {
+  update: async (supabase: SupabaseClient, id: string, updates: UpdatePayment) => {
     const { data, error } = await supabase
       .from("payments")
       .update(updates)
@@ -164,11 +146,7 @@ export const paymentsApi = {
   },
 
   // Update payment status
-  updateStatus: async (
-    supabase: SupabaseClient,
-    id: string,
-    status: PaymentStatus
-  ) => {
+  updateStatus: async (supabase: SupabaseClient, id: string, status: PaymentStatus) => {
     const updates: UpdatePayment = { status };
 
     if (status === "refunded") {
@@ -206,11 +184,7 @@ export const paymentsApi = {
   },
 
   // Update Stripe transfer ID
-  updateStripeTransfer: async (
-    supabase: SupabaseClient,
-    id: string,
-    stripeTransferId: string
-  ) => {
+  updateStripeTransfer: async (supabase: SupabaseClient, id: string, stripeTransferId: string) => {
     const { data, error } = await supabase
       .from("payments")
       .update({ stripe_transfer_id: stripeTransferId })
@@ -223,14 +197,26 @@ export const paymentsApi = {
   },
 
   // Get payment by Stripe payment intent ID
-  getByStripePaymentIntent: async (
-    supabase: SupabaseClient,
-    stripePaymentIntentId: string
-  ) => {
+  getByStripePaymentIntent: async (supabase: SupabaseClient, stripePaymentIntentId: string) => {
     const { data, error } = await supabase
       .from("payments")
       .select("*")
       .eq("stripe_payment_intent_id", stripePaymentIntentId)
+      .single();
+
+    if (error) throw error;
+    return data as Payment;
+  },
+
+  // Get payment by Stripe checkout session ID
+  getByStripeCheckoutSessionId: async (
+    supabase: SupabaseClient,
+    stripeCheckoutSessionId: string
+  ) => {
+    const { data, error } = await supabase
+      .from("payments")
+      .select("*")
+      .eq("stripe_checkout_session_id", stripeCheckoutSessionId)
       .single();
 
     if (error) throw error;
@@ -246,10 +232,7 @@ export const paymentsApi = {
       .eq("status", "released");
 
     if (error) throw error;
-    return data.reduce(
-      (total, payment) => total + Number(payment.payout_amount),
-      0
-    );
+    return data.reduce((total, payment) => total + Number(payment.payout_amount), 0);
   },
 
   // Get total spent for a viber

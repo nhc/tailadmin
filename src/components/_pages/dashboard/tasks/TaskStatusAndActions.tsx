@@ -77,6 +77,16 @@ export const TaskStatusAndActions = ({
     }
   };
 
+  const mapStatusToLabel = (status: string) => {
+    switch (status) {
+      case "pending":
+        return isViber ? status : "Awaiting Viber Approval";
+
+      default:
+        return status;
+    }
+  };
+
   return (
     <>
       {showMessage && (
@@ -106,7 +116,7 @@ export const TaskStatusAndActions = ({
                         {claim.coder.nickname || claim.coder.name || "Anonymous"}
                       </span>
                       <Badge color={getClaimStatusColor(claim.status)} size="sm">
-                        {claim.status}
+                        {mapStatusToLabel(claim.status)}
                       </Badge>
                     </div>
                   </div>

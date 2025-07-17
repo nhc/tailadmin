@@ -42,7 +42,7 @@ const navItems: NavItem[] = [
     isMenuOpen: true,
     subItems: [
       // { name: "Open", path: "/dashboard/tasks/open", pro: false },
-      { name: "Claimed", path: "/dashboard/tasks/claimed", pro: false },
+      { name: "Claimed by Coder", path: "/dashboard/tasks/claimed", pro: false },
       { name: "In Progress", path: "/dashboard/tasks/inprogress", pro: false },
       { name: "Delivered", path: "/dashboard/tasks/delivered", pro: false },
       { name: "Completed", path: "/dashboard/tasks/completed", pro: false },
@@ -64,7 +64,7 @@ const navItems: NavItem[] = [
     name: "Your Tasks / Jobs",
     subItems: [
       {
-        name: "Claimed",
+        name: "Claimed by Viber",
         path: "/dashboard/tasks/claimed",
         pro: false,
       },
