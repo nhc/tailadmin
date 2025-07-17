@@ -1,4 +1,70 @@
-# Server Actions Data Flow Solution
+# Server Actions Data Flow
+
+## Overview
+
+This document describes the data flow pattern used for server actions in the Last20 platform.
+
+## Pattern
+
+### Server Actions Response Pattern
+
+**IMPORTANT**: All server actions must follow this consistent pattern to avoid serialization issues:
+
+1. **Return data directly** - Don't wrap responses in `{ success: true, data }` objects
+2. **Throw errors** - Don't return error objects, throw Error instances instead
+3. **Keep responses simple** - Return serializable data only
+
+#### ✅ Correct Pattern (like task actions)
+
+```typescript
+export const updateSomething = async (data: SomeData) => {
+  try {
+    const supabase = await createClient();
+    const result = await someApi.update(supabase, data);
+    return result; // Return data directly
+  } catch (error) {
+    throw new Error("Failed to update"); // Throw errors
+  }
+};
+```
+
+#### ❌ Incorrect Pattern (causes serialization issues)
+
+```typescript
+export const updateSomething = async (data: SomeData) => {
+  try {
+    const result = await someApi.update(supabase, data);
+    return { success: true, data: result }; // Don't wrap in objects
+  } catch (error) {
+    return { success: false, error: "Failed" }; // Don't return error objects
+  }
+};
+```
+
+### Client-Side Handling
+
+```typescript
+const handleAction = async () => {
+  try {
+    const result = await serverAction(data);
+    // Handle success - result contains the data directly
+    console.log(result);
+  } catch (error) {
+    // Handle error - error is thrown, not returned
+    console.error(error.message);
+  }
+};
+```
+
+## Why This Pattern?
+
+Next.js server actions have strict serialization requirements. Complex objects or inconsistent response patterns can cause:
+
+- `result is undefined` errors
+- Serialization failures
+- Inconsistent behavior across actions
+
+This pattern ensures all server actions work reliably and consistently.
 
 ## Problem
 

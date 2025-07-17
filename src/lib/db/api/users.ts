@@ -62,7 +62,10 @@ export const usersApi = {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      throw error;
+    }
+
     return data as User;
   },
 

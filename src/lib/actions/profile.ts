@@ -21,12 +21,9 @@ export const updateUserProfile = async (updates: UpdateUser) => {
     // Update the user profile
     const updatedUser = await usersApi.update(supabase, session.user.id, updates);
 
-    return { success: true, user: updatedUser };
+    return updatedUser;
   } catch (error) {
     console.error("Failed to update user profile:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to update profile",
-    };
+    throw new Error(error instanceof Error ? error.message : "Failed to update profile");
   }
 };

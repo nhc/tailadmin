@@ -28,22 +28,21 @@ export const EditProfileModal = ({ user }: EditProfileModalProps) => {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      const result = await updateUserProfile({
+      const updatedUser = await updateUserProfile({
         bio: bioValue,
         nickname: nicknameValue,
         timezone: timezoneValue,
         location: locationValue,
       });
 
-      if (result.success) {
-        closeModal();
-        // Optionally refresh the page to show updated data
-        window.location.reload();
-      } else {
-        console.error("Failed to update profile:", result.error);
-      }
+      closeModal();
+      // Optionally refresh the page to show updated data
+      window.location.reload();
     } catch (error) {
       console.error("Failed to update profile:", error);
+      alert(
+        `Failed to update profile: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
     } finally {
       setIsSaving(false);
     }
