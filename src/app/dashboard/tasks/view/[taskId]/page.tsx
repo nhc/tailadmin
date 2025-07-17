@@ -10,6 +10,7 @@ import { ClockIcon, DollarSignIcon, TagIcon, UserIcon } from "lucide-react";
 import Badge from "@/components/ui/badge/Badge";
 import { useUserContext } from "@/context/UserContext";
 import { useModal } from "@/hooks/useModal";
+import { useActiveMenu } from "@/hooks/useActiveMenu";
 import { Modal } from "@/components/ui/modal";
 import Button from "@/components/ui/button/Button";
 import TextArea from "@/components/form/input/TextArea";
@@ -56,6 +57,32 @@ const TaskDetailsPage = () => {
   const [claimMessage, setClaimMessage] = useState("");
   const [isSubmittingClaim, setIsSubmittingClaim] = useState(false);
   const [claimValidationError, setClaimValidationError] = useState<string | null>(null);
+
+  // Set the active menu item based on task status
+  const getActiveMenuPath = () => {
+    if (!task) return "/dashboard/tasks/open";
+
+    switch (task.status) {
+      case "open":
+        return "/dashboard/tasks/open";
+      case "claimed":
+        return "/dashboard/tasks/claimed";
+      case "inprogress":
+        return "/dashboard/tasks/inprogress";
+      case "delivered":
+        return "/dashboard/tasks/delivered";
+      case "completed":
+        return "/dashboard/tasks/completed";
+      case "disputed":
+        return "/dashboard/tasks/disputed";
+      case "cancelled":
+        return "/dashboard/tasks/cancelled";
+      default:
+        return "/dashboard/tasks/open";
+    }
+  };
+
+  useActiveMenu(getActiveMenuPath());
 
   // Zod validation schema for claim message
   const claimMessageSchema = z.object({

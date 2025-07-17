@@ -226,7 +226,7 @@ const supportItems: NavItem[] = [
 ];
 
 const AppSidebar: React.FC = () => {
-  const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
+  const { isExpanded, isMobileOpen, isHovered, setIsHovered, forcedActivePath } = useSidebar();
   const pathname = usePathname();
   const { isViber, isCoder, isAdmin } = useUserContext();
 
@@ -360,13 +360,20 @@ const AppSidebar: React.FC = () => {
   const [subMenuHeight, setSubMenuHeight] = useState<Record<string, number>>({});
   const subMenuRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
-  // const isActive = (path: string) => path === pathname;
-
-  const isActive = useCallback((path: string) => path === pathname, [pathname]);
+  // Updated isActive function to check forcedActivePath first
+  const isActive = useCallback(
+    (path: string) => {
+      // If there's a forced active path, use that instead of the current pathname
+      const currentPath = forcedActivePath || pathname;
+      return path === currentPath;
+    },
+    [pathname, forcedActivePath]
+  );
 
   useEffect(() => {
     // Check if the current path matches any submenu item
     const newOpenSubmenus = new Set<string>();
+    const currentPath = forcedActivePath || pathname;
 
     ["main", "support", "others"].forEach((menuType) => {
       const items =
@@ -378,7 +385,7 @@ const AppSidebar: React.FC = () => {
             newOpenSubmenus.add(`${menuType}-${index}`);
           } else {
             nav.subItems.forEach((subItem) => {
-              if (isActive(subItem.path)) {
+              if (subItem.path === currentPath) {
                 newOpenSubmenus.add(`${menuType}-${index}`);
               }
             });
@@ -389,7 +396,7 @@ const AppSidebar: React.FC = () => {
 
     // Set the menus to open
     setOpenSubmenus(newOpenSubmenus);
-  }, [pathname, isActive]);
+  }, [pathname, forcedActivePath, isActive]);
 
   useEffect(() => {
     // Set the height of the submenu items when the submenu is opened
