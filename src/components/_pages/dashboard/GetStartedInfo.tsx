@@ -159,7 +159,7 @@ export const GetStartedInfo = () => {
       description: "Develop and implement the required solution",
     },
     {
-      number: 4,
+      number: 5,
       title: "Submit completed work",
       description: "Deliver your solution for review and approval",
     },

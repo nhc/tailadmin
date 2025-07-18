@@ -82,7 +82,7 @@ export const techStackByCategory = {
   "devops-tools": ["Docker", "Git", "GitHub", "GitLab", "Kubernetes"],
 };
 
-export const commonBudgets = ["0-50", "50-100", "100-150", "150-200", "200+"];
+export const commonBudgets = ["50", "100", "200"];
 export const createTaskFormBudgets = [
   { label: "50", value: "5000" },
   { label: "100", value: "10000" },

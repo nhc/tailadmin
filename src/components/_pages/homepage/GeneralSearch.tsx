@@ -8,6 +8,8 @@ import { commonTechStack, commonBudgets } from "@/config/select-lists";
 import Badge from "@/components/ui/badge/Badge";
 import { SearchIcon, DollarSignIcon, TagIcon, ClockIcon, UserIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { formatPrice, formatDate } from "@/lib/utils/date-numbers";
+import { useUserContext } from "@/context/UserContext";
 
 type TaskWithRelations = Task & {
   creator: {
@@ -41,6 +43,7 @@ export default function GeneralSearch({
   const [tasks, setTasks] = useState<TaskWithRelations[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { user } = useUserContext();
   const router = useRouter();
 
   useEffect(() => {
@@ -148,21 +151,6 @@ export default function GeneralSearch({
     if (e.key === "Enter") {
       handleSearch();
     }
-  };
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(price);
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
   };
 
   return (
@@ -302,9 +290,9 @@ export default function GeneralSearch({
                   <div className="space-y-3">
                     {/* Price */}
                     <div className="flex items-center gap-2">
-                      <DollarSignIcon className="w-4 h-4 text-green-600" />
-                      <span className="font-semibold text-green-600">
-                        {formatPrice(task.price)}
+                      {/* <DollarSignIcon className="w-4 h-4 text-green-600" /> */}
+                      <span className="font-bold text-green-600 text-lg">
+                        {formatPrice(task.price, user?.currency)}
                       </span>
                     </div>
 

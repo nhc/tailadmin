@@ -5,11 +5,12 @@ import Label from "@/components/form/Label";
 import { EyeCloseIcon, EyeIcon } from "@/icons";
 import Link from "next/link";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { GitHubAuthButton } from "./github-auth-button";
 import { createClient } from "@/lib/supabase/client";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useSearchParams } from "next/navigation";
 
 import { ROUTES } from "@/config/routes";
 import { signin } from "@/app/auth/signin/actions";
@@ -28,6 +29,16 @@ export default function SignInForm() {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isManualLoading, setIsManualLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const confirmed = searchParams.get("confirmed");
+    if (confirmed === "true") {
+      setShowConfirmation(true);
+    }
+  }, [searchParams]);
 
   const {
     register,
@@ -48,24 +59,25 @@ export default function SignInForm() {
   const supabase = createClient();
 
   const handleGoogleLogin = async () => {
-    setIsGoogleLoading(true);
+    alert("Coming soon");
+    // setIsGoogleLoading(true);
 
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-        },
-      });
+    // try {
+    //   const { error } = await supabase.auth.signInWithOAuth({
+    //     provider: "google",
+    //     options: {
+    //       redirectTo: `${window.location.origin}/auth/callback`,
+    //     },
+    //   });
 
-      if (error) {
-        throw error;
-      }
-    } catch (error: unknown) {
-      setError("Failed to connect to Google. Please try again.");
-    } finally {
-      setIsGoogleLoading(false);
-    }
+    //   if (error) {
+    //     throw error;
+    //   }
+    // } catch (error: unknown) {
+    //   setError("Failed to connect to Google. Please try again.");
+    // } finally {
+    //   setIsGoogleLoading(false);
+    // }
   };
 
   return (
@@ -127,6 +139,12 @@ export default function SignInForm() {
                 </span>
               </div>
             </div>
+
+            {showConfirmation && (
+              <div className="mb-4 p-3 text-sm text-green-600 bg-green-50 border border-green-200 rounded-lg dark:bg-green-900/20 dark:border-green-800 dark:text-green-400">
+                Email successfully confirmed, please login
+              </div>
+            )}
 
             {error && (
               <div className="mb-4 p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg dark:bg-red-900/20 dark:border-red-800 dark:text-red-400">

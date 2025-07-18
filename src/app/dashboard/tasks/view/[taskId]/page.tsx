@@ -6,7 +6,6 @@ import { tasksApi } from "@/lib/db/api";
 import { claimTask } from "@/lib/actions/tasks";
 import type { Task, TaskStatus } from "@/lib/db/api/types";
 import { useParams, useRouter } from "next/navigation";
-import { ClockIcon, DollarSignIcon, TagIcon, UserIcon } from "lucide-react";
 import Badge from "@/components/ui/badge/Badge";
 import { useUserContext } from "@/context/UserContext";
 import { useModal } from "@/hooks/useModal";

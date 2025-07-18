@@ -111,20 +111,19 @@ export default function SignUpForm() {
     try {
       const supabase = createClient();
 
-      const { data: authData, error: signUpError } = await supabase.auth.signUp(
-        {
-          email: data.email,
-          password: data.password,
-          options: {
-            data: {
-              first_name: data.firstName,
-              last_name: data.lastName,
-              full_name: `${data.firstName} ${data.lastName}`,
-              user_type: userType,
-            },
+      const { data: authData, error: signUpError } = await supabase.auth.signUp({
+        email: data.email,
+        password: data.password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/signin?confirmed=true`,
+          data: {
+            first_name: data.firstName,
+            last_name: data.lastName,
+            full_name: `${data.firstName} ${data.lastName}`,
+            user_type: userType,
           },
-        }
-      );
+        },
+      });
 
       if (signUpError) {
         throw signUpError;
@@ -166,21 +165,15 @@ export default function SignUpForm() {
 
       // Handle specific Supabase errors
       if (error.message?.includes("already registered")) {
-        setError(
-          "An account with this email already exists. Please sign in instead."
-        );
+        setError("An account with this email already exists. Please sign in instead.");
       } else if (error.message?.includes("password")) {
         setError("Password must be at least 8 characters long.");
       } else if (error.message?.includes("Invalid email")) {
         setError("Please enter a valid email address.");
       } else if (error.message?.includes("weak password")) {
-        setError(
-          "Password must be stronger. Include uppercase, lowercase, and numbers."
-        );
+        setError("Password must be stronger. Include uppercase, lowercase, and numbers.");
       } else {
-        setError(
-          error.message || "An error occurred during sign up. Please try again."
-        );
+        setError(error.message || "An error occurred during sign up. Please try again.");
       }
     } finally {
       setIsManualLoading(false);
@@ -241,9 +234,7 @@ export default function SignUpForm() {
                     fill="#EB4335"
                   />
                 </svg>
-                {isGoogleLoading
-                  ? "Connecting to Google..."
-                  : "Sign up with Google"}
+                {isGoogleLoading ? "Connecting to Google..." : "Sign up with Google"}
               </button>
               <GitHubAuthButton />
             </div>
@@ -360,13 +351,8 @@ export default function SignUpForm() {
                   />
                   <p className="inline-block font-normal text-gray-500 dark:text-gray-400">
                     By creating an account means you agree to the{" "}
-                    <span className="text-gray-800 dark:text-white/90">
-                      Terms and Conditions,
-                    </span>{" "}
-                    and our{" "}
-                    <span className="text-gray-800 dark:text-white">
-                      Privacy Policy
-                    </span>
+                    <span className="text-gray-800 dark:text-white/90">Terms and Conditions,</span>{" "}
+                    and our <span className="text-gray-800 dark:text-white">Privacy Policy</span>
                   </p>
                 </div>
                 {errors.acceptTerms && (
